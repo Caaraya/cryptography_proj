@@ -1,32 +1,57 @@
-    import java.rmi.*;
-    import java.rmi.server.*;
-    import java.util.*;
-     
-    public class ChatServer {
-    public static void main (String[] argv) {
-        try {
-    	    	System.setSecurityManager(new RMISecurityManager());
-    	    	Scanner s=new Scanner(System.in);
-    	    	System.out.println("Enter Your name and press Enter:");
-    	    	String name=s.nextLine().trim();
-     
-    	    	Chat server = new Chat(name);	
-     
-    	    	Naming.rebind("rmi://localhost/ABC", server);
-     
-    	    	System.out.println("[System] Chat Remote Object is ready:");
-     
-    	    	while(true){
-    	    		String msg=s.nextLine().trim();
-    	    		if (server.getClient()!=null){
-    	    			ChatInterface client=server.getClient();
-    	    			msg="["+server.getName()+"] "+msg;
-    	    			client.send(msg);
-    	    		}	
-    	    	}
-     
-        	}catch (Exception e) {
-        		System.out.println("[System] Server failed: " + e);
-        	}
-    	}
-    }
+import java.net.*;
+import java.io.*;
+
+public class ChatServer
+{  private Socket          socket   = null;
+   private ServerSocket    server   = null;
+   private DataInputStream streamIn =  null;
+   private DataInputStream  console   = null;
+   private DataOutputStream streamOut = null;
+
+   public ChatServer(int port)
+   {  try
+      {  System.out.println("Binding to port " + port + ", please wait  ...");
+         server = new ServerSocket(port);  
+         System.out.println("Server started: " + server);
+         System.out.println("Waiting for a client ..."); 
+         socket = server.accept();
+         System.out.println("Client accepted: " + socket);
+         open();
+         boolean done = false;
+         while (!done)
+         {  try
+            {  String line = streamIn.readUTF();
+               System.out.println(line);
+               done = line.equals(".bye");
+			   
+			   String text = console.readLine();
+			   streamOut.writeUTF(text);
+			   streamOut.flush();
+            }
+            catch(IOException ioe)
+            {  done = true;
+            }
+         }
+         close();
+      }
+      catch(IOException ioe)
+      {  System.out.println(ioe); 
+      }
+   }
+   public void open() throws IOException
+   {  streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+      console   = new DataInputStream(System.in);
+      streamOut = new DataOutputStream(socket.getOutputStream());   
+   }
+   public void close() throws IOException
+   {  if (socket != null)    socket.close();
+      if (streamIn != null)  streamIn.close();
+   }
+   public static void main(String args[])
+   {  ChatServer server = null;
+      if (args.length != 1)
+         System.out.println("Usage: java ChatServer port");
+      else
+         server = new ChatServer(Integer.parseInt(args[0]));
+   }
+}
