@@ -20,13 +20,20 @@ public class ChatServer
          boolean done = false;
          while (!done)
          {  try
-            {  String line = streamIn.readUTF();
-               System.out.println(line);
-               done = line.equals(".bye");
+            {  
+			   if (streamIn.available() >0) {
+				   String line = streamIn.readUTF();
+				   System.out.println(line);
+				   done = line.equals(".bye");
+			   }
 			   
-			   String text = console.readLine();
-			   streamOut.writeUTF(text);
-			   streamOut.flush();
+			   if (console.available() >0) {
+				   String text = console.readLine();
+				   streamOut.writeUTF(text);
+			       streamOut.flush();
+				   done = text.equals(".bye");
+			   }
+			   
             }
             catch(IOException ioe)
             {  done = true;

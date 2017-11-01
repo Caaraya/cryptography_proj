@@ -24,11 +24,20 @@ public class ChatClient
       while (!line.equals(".bye"))
       {  try
          {  
-			line = console.readLine();
-            streamOut.writeUTF(line);
-            streamOut.flush();
-			String text = streamIn.readUTF();
-            System.out.println(text);
+			if (console.available() > 0) {
+				line = console.readLine();
+				streamOut.writeUTF(line);
+				streamOut.flush();
+			}
+			
+			if (streamIn.available() > 0) {
+				String text = streamIn.readUTF();
+				System.out.println(text);
+				if (text.equals(".bye")) {
+					line = ".bye";
+				}
+			}
+			
          }
          catch(IOException ioe)
          {  System.out.println("Sending error: " + ioe.getMessage());
