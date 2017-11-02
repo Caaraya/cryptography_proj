@@ -2,11 +2,11 @@ import java.net.*;
 import java.io.*;
 
 public class ChatServer {  
-	private Socket		   socket	= null;
-	private ServerSocket	   server	= null;
-	private DataInputStream streamIn =	null;
-	private DataInputStream	console	  = null;
-	private DataOutputStream streamOut = null;
+	private Socket				socket		= null;
+	private ServerSocket		server		= null;
+	private DataInputStream		streamIn	= null;
+	private DataInputStream		console		= null;
+	private DataOutputStream	streamOut	= null;
 
 	public ChatServer(int port, String sCia) {  
 		try {
@@ -26,7 +26,8 @@ public class ChatServer {
 				int[] cSel = selector(cCia);
 				
 				boolean done = false;
-				if (sSel[0] == cSel[0] && sSel[1] == cSel[1] && sSel[2] == cSel[2]) {
+				
+				if ( (sSel[0] == cSel[0]) && (sSel[1] == cSel[1]) && (sSel[2] == cSel[2]) ) {
 					System.out.println("Client connected");
 					try {
 						streamOut.writeUTF("Successfully connected to server");
@@ -39,8 +40,6 @@ public class ChatServer {
 					try {
 						streamOut.writeUTF("Incompatible security types, closing connection");
 						streamOut.flush();
-						streamOut.writeUTF(".bye");
-						streamOut.flush();
 					} catch(IOException ioe) {
 						System.out.println(ioe.getMessage());
 					}
@@ -48,19 +47,30 @@ public class ChatServer {
 					done = true;
 				}
 				
+				if ( (sSel[0] == 1) && (sSel[1] == 1) && (sSel[2] == 1) ) {
+					//receive fully secured pw
+				} else if ( (sSel[0] == 1) && (sSel[2] == 1) ) {
+					//receive C'd pw
+				} else if ( (sSel[1] == 1) && (sSel[2] == 1) ) {
+					//receive I'd pw
+				} else if (sSel[2] == 1) {
+					//receive pw
+				}
+				
+				String line = "";
 				while (!done) {	
 					try {
 						if (streamIn.available() >0) {
-							String line = streamIn.readUTF();
+							line = streamIn.readUTF();
 							System.out.println(line);
 							done = line.equals(".bye");
 						}
 					
 						if (console.available() >0) {
-							String text = console.readLine();
-							streamOut.writeUTF(text);
+							line = console.readLine();
+							streamOut.writeUTF(line);
 							streamOut.flush();
-							done = text.equals(".bye");
+							done = line.equals(".bye");
 						}
 					} catch(IOException ioe) {
 						done = true;
@@ -76,43 +86,41 @@ public class ChatServer {
 	}
 	
 	public void open() throws IOException {	 
-		streamIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-		console	  = new DataInputStream(System.in);
-		streamOut = new DataOutputStream(socket.getOutputStream());	  
+		streamIn	= new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+		console		= new DataInputStream(System.in);
+		streamOut	= new DataOutputStream(socket.getOutputStream());	  
 	}
 	
 	public int[] selector(String sel) {
 		int[] choice = new int[3];
-		if (sel.contains("C") || sel.contains("c")){
+		if (sel.contains("C") || sel.contains("c"))
 			choice[0] = 1;
-		} else {
+		else
 			choice[0] = 0;
-		}
 		
-		if (sel.contains("I") || sel.contains("i")) {
+		if (sel.contains("I") || sel.contains("i"))
 			choice[1] = 1;
-		} else {
+		else
 			choice[1] = 0;
-		}
 		
-		if (sel.contains("A") || sel.contains("a")) {
+		if (sel.contains("A") || sel.contains("a"))
 			choice[2] = 1;
-		} else {
+		else
 			choice[2] = 0;
-		}
 		
 		return choice;
 	}
 	
-   public void close() throws IOException
-   {  if (socket != null)	 socket.close();
-	  if (streamIn != null)	 streamIn.close();
-   }
-   public static void main(String args[])
-   {  ChatServer server = null;
-	  if (args.length != 2)
-		 System.out.println("Incorrect command line entry");
-	  else
-		 server = new ChatServer(Integer.parseInt(args[0]), args[1]);
-   }
+	public void close() throws IOException {
+		if (socket	!= null)	socket.close();
+		if (streamIn!= null)	streamIn.close();
+	}
+	
+	public static void main(String args[]) {
+		ChatServer server = null;
+		if (args.length != 2)
+			System.out.println("Incorrect command line entry");
+		else
+			server = new ChatServer(Integer.parseInt(args[0]), args[1]);
+	}
 }
