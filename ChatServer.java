@@ -8,25 +8,29 @@ public class ChatServer {
 	private DataInputStream		console		= null;
 	private DataOutputStream	streamOut	= null;
 
-	public ChatServer(int port, String sCia) {  
+	public ChatServer(int port, String sCia) {
+		//Try: open socket
 		try {
 			System.out.println("Binding to port " + port + ", please wait	...");
 			server = new ServerSocket(port);
 			System.out.println("Server started: " + server);
 			
-			//put something here to have the rest loop indefinately
+			//Server runs for all time
 			while(true) {
+				//Wait for client connection
 				System.out.println("Waiting for a client ...");
 				socket = server.accept();
 				System.out.println("Client found: " + socket);
 				open();
 				
+				//Create security choice array for server and client
 				int[] sSel = selector(sCia);
 				String cCia = streamIn.readUTF();
 				int[] cSel = selector(cCia);
 				
 				boolean done = false;
 				
+				//Compare security choice arrays, return success/failure to client
 				if ( (sSel[0] == cSel[0]) && (sSel[1] == cSel[1]) && (sSel[2] == cSel[2]) ) {
 					System.out.println("Client connected");
 					try {
@@ -47,6 +51,7 @@ public class ChatServer {
 					done = true;
 				}
 				
+				//Apply Authentication
 				if ( (sSel[0] == 1) && (sSel[1] == 1) && (sSel[2] == 1) ) {
 					//receive fully secured pw
 				} else if ( (sSel[0] == 1) && (sSel[2] == 1) ) {
@@ -57,20 +62,38 @@ public class ChatServer {
 					//receive pw
 				}
 				
+				//Chat loop
 				String line = "";
 				while (!done) {	
 					try {
-						if (streamIn.available() >0) {
+						//Receive data
+						if (streamIn.available() > 0) {
 							line = streamIn.readUTF();
+							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
+								//decrypt CI
+							} else if (sSel[0] == 1) {
+								//decrypt C
+							} else if (sSel[1] == 1) {
+								//decrypt I
+							}
 							System.out.println(line);
 							done = line.equals(".bye");
 						}
 					
-						if (console.available() >0) {
+						//Send data
+						if (console.available() > 0) {
 							line = console.readLine();
+							done = line.equals(".bye");
+							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
+								//apply CI
+							} else if (sSel[0] == 1) {
+								//apply C
+							} else if (sSel[1] == 1) {
+								//apply I
+							}
+							
 							streamOut.writeUTF(line);
 							streamOut.flush();
-							done = line.equals(".bye");
 						}
 					} catch(IOException ioe) {
 						done = true;
@@ -79,18 +102,20 @@ public class ChatServer {
 				close();
 				System.out.println("Disconnected from client");
 				System.out.println();
-			}
+			} //end server running loop
 		} catch(IOException ioe) {
 			System.out.println(ioe.getMessage()); 
 		}
 	}
 	
+	//Open socket parts
 	public void open() throws IOException {	 
 		streamIn	= new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 		console		= new DataInputStream(System.in);
 		streamOut	= new DataOutputStream(socket.getOutputStream());	  
 	}
 	
+	//Create security choices array
 	public int[] selector(String sel) {
 		int[] choice = new int[3];
 		if (sel.contains("C") || sel.contains("c"))
@@ -111,6 +136,7 @@ public class ChatServer {
 		return choice;
 	}
 	
+	//Close socket parts
 	public void close() throws IOException {
 		if (socket	!= null)	socket.close();
 		if (streamIn!= null)	streamIn.close();
