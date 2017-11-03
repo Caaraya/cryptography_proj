@@ -1,8 +1,7 @@
-package assignment3;
+
 
 import java.net.*;
 import java.io.*;
-import assignment3.ChatUtils;
 
 public class ChatServer {  
 	private Socket				socket		= null;

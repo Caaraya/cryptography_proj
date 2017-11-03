@@ -1,4 +1,3 @@
-package assignment3;
 
 import java.lang.*;
 import java.io.*;
@@ -66,24 +65,27 @@ public class ChatUtils{
         return key;
     }
 
-    public byte[] encryptPublicRSA(String path, String msg) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    
+    public static String encryptPublicRSA(String path, String msg, Cipher pkCipher) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException
     {
         PublicKey key = getPublicKey(path);
         byte[] str = null;
-        if (key == null) return str;
+        if (key == null) return "";
         pkCipher.init(Cipher.ENCRYPT_MODE, key);
-        str = pkCipher.doFinal(msg.getBytes());
-        return str;
+        byte[] reCipherBytes = Base64.getDecoder().decode(msg);
+        str = pkCipher.doFinal(reCipherBytes);
+        return Base64.getEncoder().encodeToString(str);
     }
 
-    public byte[] decryptPrivateRSA(String path, String msg) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    public static String decryptPrivateRSA(String path, String msg, Cipher pkCipher) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException
     {
-        PublicKey key = getPublicKey(path);
+        PrivateKey key = getPrivateKey(path);
         byte[] str = null;
-        if (key == null) return str;
+        if (key == null) return "";
         pkCipher.init(Cipher.DECRYPT_MODE, key);
-        str = pkCipher.doFinal(msg.getBytes());
-        return str;
+        byte[] reCipherBytes = Base64.getDecoder().decode(msg);
+        str = pkCipher.doFinal(reCipherBytes);
+        return Base64.getEncoder().encodeToString(str);
     }
 
     public String hashpass(String plainpass){
