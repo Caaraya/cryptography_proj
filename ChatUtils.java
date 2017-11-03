@@ -19,6 +19,15 @@ public class ChatUtils{
         aesCipher = Cipher.getInstance("AES");
     }
 
+    public Key makeAESKey() throws NoSuchAlgorithmException
+    {
+        Key key;
+        SecureRandom rand = new SecureRandom();
+        KeyGenerator generator = KeyGenerator.getInstance("AES");
+        generator.init(256, rand);
+        return generator.generateKey();
+    }
+
     private PrivateKey getPrivateKey(String loc)
     {
         PrivateKey privateKey = null;
