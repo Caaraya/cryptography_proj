@@ -5,6 +5,7 @@ import java.security.*;
 import java.math.BigInteger;
 import java.nio.*;
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -49,30 +50,27 @@ public class ChatUtils{
         return key;
     }
 
-    public static String encryptAES(Key key, String msg) throws 
-    NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    public static String encryptAES(byte[] iv, Key key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance("AES");
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
         byte[] str = null;
         if (key == null) return "";
-        aeCipher.init(Cipher.ENCRYPT_MODE, key);
+        aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
         str = aeCipher.doFinal(msg.getBytes());
         return new String(str);
     }
 
-    public static String decryptAES(Key key, String msg) throws
-    NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    public static String decryptAES(byte[] iv, Key key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance("AES");
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
         byte[] str = null;
         if (key == null) return "";
-        aeCipher.init(Cipher.DECRYPT_MODE, key);
+        aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
         str = aeCipher.doFinal(msg.getBytes());
         return new String (str);
     }
     
-    public static String encryptPublicRSA(String path, String msg) throws 
-    NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    public static String encryptPublicRSA(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
         PublicKey key = getPublicKey(path);
@@ -84,8 +82,7 @@ public class ChatUtils{
         return Base64.getEncoder().encodeToString(str);
     }
 
-    public static String decryptPrivateRSA(String path, String msg) throws 
-    NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, BadPaddingException
+    public static String decryptPrivateRSA(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
         PrivateKey key = getPrivateKey(path);
@@ -96,13 +93,20 @@ public class ChatUtils{
         str = pkCipher.doFinal(reCipherBytes);
         return Base64.getEncoder().encodeToString(str);
     }
+
     public static Key makeAESKey() throws NoSuchAlgorithmException
     {
-        Key key;
         KeyGenerator generator = KeyGenerator.getInstance("AES");
-        generator.init(128);
         return generator.generateKey();
     }
+
+    public static byte [] generateIV() {
+        SecureRandom rand = new SecureRandom();
+        byte [] iv = new byte [16];
+        rand.nextBytes(iv);
+        return iv;
+    }
+
     public String hashpass(String plainpass){
         String str;
         try{
