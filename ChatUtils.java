@@ -10,24 +10,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 public class ChatUtils{
-    Cipher pkCipher;
-    Cipher aesCipher;
 
-    public ChatUtils() throws GeneralSecurityException {
-        pkCipher = Cipher.getInstance("RSA");
-        aesCipher = Cipher.getInstance("AES");
-    }
-
-    public Key makeAESKey() throws NoSuchAlgorithmException
-    {
-        Key key;
-        SecureRandom rand = new SecureRandom();
-        KeyGenerator generator = KeyGenerator.getInstance("AES");
-        generator.init(256, rand);
-        return generator.generateKey();
-    }
-
-    private PrivateKey getPrivateKey(String loc)
+    private static PrivateKey getPrivateKey(String loc)
     {
         PrivateKey privateKey = null;
         try{
@@ -46,7 +30,7 @@ public class ChatUtils{
         return privateKey;
     }
 
-    private PublicKey getPublicKey(String loc)
+    private static PublicKey getPublicKey(String loc)
     {
         PublicKey key = null;
         try 
@@ -65,9 +49,32 @@ public class ChatUtils{
         return key;
     }
 
-    
-    public static String encryptPublicRSA(String path, String msg, Cipher pkCipher) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    public static String encryptAES(Key key, String msg) throws 
+    NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException
     {
+        Cipher aeCipher = Cipher.getInstance("AES");
+        byte[] str = null;
+        if (key == null) return "";
+        aeCipher.init(Cipher.ENCRYPT_MODE, key);
+        str = aeCipher.doFinal(msg.getBytes());
+        return new String(str);
+    }
+
+    public static String decryptAES(Key key, String msg) throws
+    NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    {
+        Cipher aeCipher = Cipher.getInstance("AES");
+        byte[] str = null;
+        if (key == null) return "";
+        aeCipher.init(Cipher.DECRYPT_MODE, key);
+        str = aeCipher.doFinal(msg.getBytes());
+        return new String (str);
+    }
+    
+    public static String encryptPublicRSA(String path, String msg) throws 
+    NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    {
+        Cipher pkCipher = Cipher.getInstance("RSA");
         PublicKey key = getPublicKey(path);
         byte[] str = null;
         if (key == null) return "";
@@ -77,8 +84,10 @@ public class ChatUtils{
         return Base64.getEncoder().encodeToString(str);
     }
 
-    public static String decryptPrivateRSA(String path, String msg, Cipher pkCipher) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException
+    public static String decryptPrivateRSA(String path, String msg) throws 
+    NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException, BadPaddingException
     {
+        Cipher pkCipher = Cipher.getInstance("RSA");
         PrivateKey key = getPrivateKey(path);
         byte[] str = null;
         if (key == null) return "";
@@ -87,7 +96,13 @@ public class ChatUtils{
         str = pkCipher.doFinal(reCipherBytes);
         return Base64.getEncoder().encodeToString(str);
     }
-
+    public static Key makeAESKey() throws NoSuchAlgorithmException
+    {
+        Key key;
+        KeyGenerator generator = KeyGenerator.getInstance("AES");
+        generator.init(128);
+        return generator.generateKey();
+    }
     public String hashpass(String plainpass){
         String str;
         try{
