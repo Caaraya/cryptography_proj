@@ -9,16 +9,23 @@ public class ChatServer {
 	private DataInputStream		streamIn	= null;
 	private BufferedReader		console		= null;
 	private DataOutputStream	streamOut	= null;
+	private Console c = System.console();
 
 	public ChatServer(int port, String sCia) {
 		System.out.println("Beginning server");
 		//Create server's security array
 		int[] sSel = selector(sCia);
+		console	= new BufferedReader(new InputStreamReader(System.in));
 		
 		if (sSel[2] == 1) {
 			//get password for server, check
-			//System.out.println("Enter the password:");
-			//String pw = System.in;
+			System.out.println("Enter the password:");
+			try {
+				while ( !console.ready());
+				char[] pw = c.readPassword();
+			} catch (IOException ioe) {
+				System.out.println(ioe.getMessage());
+			}
 		}
 		
 		//Try: open socket
@@ -126,7 +133,6 @@ public class ChatServer {
 	//Open socket parts
 	public void open() throws IOException {	 
 		streamIn	= new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-		console		= new BufferedReader(new InputStreamReader(System.in));
 		streamOut	= new DataOutputStream(socket.getOutputStream());	  
 	}
 	
