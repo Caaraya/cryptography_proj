@@ -7,22 +7,21 @@ public class ChatServer {
 	private Socket				socket		= null;
 	private ServerSocket		server		= null;
 	private DataInputStream		streamIn	= null;
-	private BufferedReader		console		= null;
+	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
-	private Console c = System.console();
+  private Console 			c 			= System.console();
 	private ChatUtils 			util        = new ChatUtils();
 
 	public ChatServer(int port, String sCia) {
 		System.out.println("Beginning server");
 		//Create server's security array
 		int[] sSel = selector(sCia);
-		console	= new BufferedReader(new InputStreamReader(System.in));
 		
 		if (sSel[2] == 1) {
 			//get password for server, check
 			System.out.println("Enter the password:");
 			try {
-				while ( !console.ready());
+				while (!console.ready());
 				char[] pw = c.readPassword();
 
 				String hash = util.hashpass(new String(pw));
@@ -79,18 +78,18 @@ public class ChatServer {
 				}
 				
 				//Authentication
-				if (sSel[2] == 1) {
-					
+				if (sSel[2] == 1 && !done) {
+					System.out.println("A");
 				}
 				
 				//Initialize Integrity
-				if (sSel[1] == 1) {
-					
+				if (sSel[1] == 1 && !done) {
+					System.out.println("I");
 				}
 				
 				//Initialize Confidentiality
-				if (sSel[0] == 1) {
-					
+				if (sSel[0] == 1 && !done) {
+					System.out.println("C");
 				}
 				
 				//Chat loop
