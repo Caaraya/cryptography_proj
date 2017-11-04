@@ -73,7 +73,7 @@ public class ChatServer {
 				}
 				
 				//Initialize Confidentiality
-				if (sSelc[0] == 1) {
+				if (sSel[0] == 1) {
 					
 				}
 				
