@@ -5,7 +5,7 @@ public class ChatServer {
 	private Socket				socket		= null;
 	private ServerSocket		server		= null;
 	private DataInputStream		streamIn	= null;
-	private DataInputStream		console		= null;
+	private BufferedReader		console		= null;
 	private DataOutputStream	streamOut	= null;
 
 	public ChatServer(int port, String sCia) {
@@ -81,7 +81,7 @@ public class ChatServer {
 						}
 					
 						//Send data
-						if (console.available() > 0) {
+						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
 							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
@@ -111,7 +111,7 @@ public class ChatServer {
 	//Open socket parts
 	public void open() throws IOException {	 
 		streamIn	= new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-		console		= new DataInputStream(System.in);
+		console		= new BufferedReader(new InputStreamReader(System.in));
 		streamOut	= new DataOutputStream(socket.getOutputStream());	  
 	}
 	
