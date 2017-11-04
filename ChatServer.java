@@ -9,7 +9,8 @@ public class ChatServer {
 	private DataInputStream		streamIn	= null;
 	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
-	private Console 			c 			= System.console();
+  private Console 			c 			= System.console();
+	private ChatUtils 			util        = new ChatUtils();
 
 	public ChatServer(int port, String sCia) {
 		System.out.println("Beginning server");
@@ -22,6 +23,14 @@ public class ChatServer {
 			try {
 				while (!console.ready());
 				char[] pw = c.readPassword();
+
+				String hash = util.hashpass(new String(pw));
+				String expectedhash = util.readFileAsString("cryptography_proj/Server/server_hash.txt");
+
+				if(!hash.equals(expectedhash)){
+					System.out.println("Incorrect password, closing session");
+					return;
+				}
 			} catch (IOException ioe) {
 				System.out.println(ioe.getMessage());
 			}
