@@ -7,6 +7,8 @@ http://esus.com/programmatically-generating-public-private-key/
 Crypto library
 https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html
 
+run in parent directory of cryptography_prog
+
 --compile and run server as--
 javac ChatServer.java ChatUtils.java
 java cryptography_proj.ChatServer (port number) (cia option)
