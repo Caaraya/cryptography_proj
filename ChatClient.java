@@ -38,15 +38,21 @@ public class ChatClient {
 		//Generate security choices array
 		int[] sec = selector(cia);
 		
-		//Apply Authentication
-		if ( (sec[0] == 1) && (sec[1] == 1) && (sec[2] == 1) ) {
-			//apply all 3 securities to pw check
-		} else if ( (sec[0] == 1) && (sec[2] == 1) ) {
-			//apply C to pw
-		} else if ( (sec[1] == 1) && (sec[2] == 1) ) {
-			//apply I to pw
-		} else if (sec[2] == 1) {
-			//send pw
+		//Authentication
+		if (sec[2] == 1) {
+			//System.out.println("Enter the password:");
+			//String pw = System.in;
+			//hash, encrypt with public key
+		}
+		
+		//Initialize Integrity
+		if (sec[1] == 1) {
+			//MAC key
+		}
+		
+		//Initialize Confidentiality
+		if (sec[0] == 1) {
+			
 		}
 		
 		//Chat loop
@@ -55,7 +61,7 @@ public class ChatClient {
 				//Data to send
 				if (console.ready()) { 
 					line = console.readLine();
-					if ( (sec[0]== 1) && (sec[1] == 1) ) {
+					if ( (sec[0] == 1) && (sec[1] == 1) ) {
 						//apply CI
 					} else if (sec[0] == 1) {
 						//apply C
@@ -68,7 +74,7 @@ public class ChatClient {
 				//Data to receive
 				if (streamIn.available() > 0) {
 					line = streamIn.readUTF();
-					if ( (sec[0]== 1) && (sec[1] == 1) ) {
+					if ( (sec[0] == 1) && (sec[1] == 1) ) {
 						//decrypt for CI
 					} else if (sec[0] == 1) {
 						//decrypt for C
