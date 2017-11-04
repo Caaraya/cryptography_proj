@@ -4,7 +4,7 @@ import java.io.*;
 public class ChatClient {  
 	private Socket 				socket	 = null;
 	private DataInputStream 	streamIn = null;
-	private DataInputStream 	console  = null;
+	private BufferedReader	 	console  = null;
 	private DataOutputStream	streamOut= null;
 
 	public ChatClient(String serverName, int serverPort, String cia) {
@@ -51,7 +51,7 @@ public class ChatClient {
 		while (!line.equals(".bye")) {
 			try {  
 				//Data to send
-				if (console.available() > 0) { 
+				if (console.ready()) { 
 					line = console.readLine();
 					if ( (sec[0]== 1) && (sec[1] == 1) ) {
 						//apply CI
@@ -77,6 +77,7 @@ public class ChatClient {
 				}
 			} catch(IOException ioe) {
 				System.out.println("Sending error: " + ioe.getMessage());
+				break;
 			}
 		}
 		System.out.println("Disconnected from server.");
@@ -85,7 +86,7 @@ public class ChatClient {
 	//Open socket parts
 	public void start() throws IOException {
 		streamIn	= new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-		console		= new DataInputStream(System.in);
+		console		= new BufferedReader(new InputStreamReader(System.in));
 		streamOut	= new DataOutputStream(socket.getOutputStream());
 	}
 	
