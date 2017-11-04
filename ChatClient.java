@@ -4,10 +4,11 @@ import java.io.*;
 import cryptography_proj.ChatUtils;
 
 public class ChatClient {  
-	private Socket 				socket	 = null;
-	private DataInputStream 	streamIn = null;
-	private BufferedReader	 	console  = null;
-	private DataOutputStream	streamOut= null;
+	private Socket 				socket		= null;
+	private DataInputStream 	streamIn	= null;
+	private BufferedReader	 	console		= null;
+	private DataOutputStream	streamOut	= null;
+	private Console				c 			= System.console();
 
 	public ChatClient(String serverName, int serverPort, String cia) {
 		System.out.println("Establishing connection. Please wait ...");
@@ -40,8 +41,14 @@ public class ChatClient {
 		
 		//Authentication
 		if (sec[2] == 1) {
-			//System.out.println("Enter the password:");
-			//String pw = System.in;
+			System.out.println("Enter the password:");
+			try {
+				while(!console.ready());
+				char[] pw = c.readPassword();
+				//send to server
+			} catch (IOException ioe) {
+				System.out.println(ioe.getMessage());
+			}
 			//hash, encrypt with public key
 		}
 		
