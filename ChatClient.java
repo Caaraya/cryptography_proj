@@ -1,5 +1,7 @@
+package cryptography_proj;
 import java.net.*;
 import java.io.*;
+import cryptography_proj.ChatUtils;
 
 public class ChatClient {  
 	private Socket 				socket	 = null;
