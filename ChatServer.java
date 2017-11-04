@@ -11,6 +11,16 @@ public class ChatServer {
 	private DataOutputStream	streamOut	= null;
 
 	public ChatServer(int port, String sCia) {
+		System.out.println("Beginning server");
+		//Create server's security array
+		int[] sSel = selector(sCia);
+		
+		if (sSel[2] == 1) {
+			//get password for server, check
+			//System.out.println("Enter the password:");
+			//String pw = System.in;
+		}
+		
 		//Try: open socket
 		try {
 			System.out.println("Binding to port " + port + ", please wait	...");
@@ -25,8 +35,7 @@ public class ChatServer {
 				System.out.println("Client found: " + socket);
 				open();
 				
-				//Create security choice array for server and client
-				int[] sSel = selector(sCia);
+				//Create security choice array for client
 				String cCia = streamIn.readUTF();
 				int[] cSel = selector(cCia);
 				
@@ -53,15 +62,19 @@ public class ChatServer {
 					done = true;
 				}
 				
-				//Apply Authentication
-				if ( (sSel[0] == 1) && (sSel[1] == 1) && (sSel[2] == 1) ) {
-					//receive fully secured pw
-				} else if ( (sSel[0] == 1) && (sSel[2] == 1) ) {
-					//receive C'd pw
-				} else if ( (sSel[1] == 1) && (sSel[2] == 1) ) {
-					//receive I'd pw
-				} else if (sSel[2] == 1) {
-					//receive pw
+				//Authentication
+				if (sSel[2] == 1) {
+					
+				}
+				
+				//Initialize Integrity
+				if (sSel[1] == 1) {
+					
+				}
+				
+				//Initialize Confidentiality
+				if (sSelc[0] == 1) {
+					
 				}
 				
 				//Chat loop
@@ -147,7 +160,7 @@ public class ChatServer {
 	public static void main(String args[]) {
 		ChatServer server = null;
 		if (args.length != 2)
-			System.out.println("Incorrect command line entry");
+			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
 		else
 			server = new ChatServer(Integer.parseInt(args[0]), args[1]);
 	}
