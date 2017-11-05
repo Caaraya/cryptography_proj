@@ -9,19 +9,33 @@ public class Integrity{
     private Mac mac;
     private byte[] tag;
 
-    // Generates MAC
+    // Initialize MAC with a new AES key
     public Integrity() {
         try {
             mac = Mac.getInstance("HmacSHA1");
             mac.init(ChatUtils.makeAESKey());
         } catch (InvalidKeyException e) {
-            throw new RuntimeException("Exception while making MAC data key", e);
+            throw new RuntimeException("Key used to initialize Mac was invalid", e);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Exception while generating AES key", e);
+            throw new RuntimeException("Exception while generating MAC with HmacSHA1", e);
         }
     }
 
-    // Returns a MAC data tag
+    // Initialize MAC with input key
+    // Input: Key to initialize MAC with
+    public Integrity(Key macKey) {
+        try{
+            mac = Mac.getInstance("HmacSHA");
+            mac.init(macKey);
+        } catch (InvalidKeyException e) {
+            throw new RuntimeException("Key used to initialize Mac was invalid", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Exception while generating MAC with HmacSHA1", e);
+        }
+    }
+
+    // Input: message to sign with MAC
+    // Output: MAC data tag
     public byte[] SignMessage(String message) {
         try {
             tag = mac.doFinal(message.getBytes());
@@ -31,12 +45,15 @@ public class Integrity{
         }
     }
 
-    // Compares two MAC
+    // Input: MAC data tag to compare with
+    // Output: Returns true if MAC tags are identical and therefore integrity is valid.
+    //         Otherwise, returns false
     public boolean CheckIntegrity(byte[] tag) {
         return Arrays.equals(this.tag, tag);
     }
 
-    // testing
+    // TODO: remove before merge
+    // Testing
     public static void main(String[] args) {
         Integrity key = new Integrity();
         byte[] test = key.SignMessage("hello");
