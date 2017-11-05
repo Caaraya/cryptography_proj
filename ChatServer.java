@@ -9,7 +9,7 @@ public class ChatServer {
 	private DataInputStream		streamIn	= null;
 	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
-  private Console 			c 			= System.console();
+	private Console 			c 			= System.console();
 	private ChatUtils 			util        = new ChatUtils();
 
 	public ChatServer(int port, String sCia) {
