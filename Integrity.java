@@ -35,12 +35,12 @@ public class Integrity {
     }
 
     /** 
-     * This method will verify the integrity of two message digests
+     * This method will verify the integrity of a message hash
      * @return true if the messages have integrity
      * @throws InvalidIntegrityException if message integrity is invalid
      */
-    public boolean checkIntegrity(byte[] digest1, byte[] digest2) throws InvalidIntegrityException {
-        boolean integrity = messageDigest.isEqual(digest1, digest2);
+    public boolean checkIntegrity(String message, byte[] digest) throws InvalidIntegrityException {
+        boolean integrity = messageDigest.isEqual(digest, messageDigest.digest(message.getBytes()));
         if (!integrity) {
             throw new InvalidIntegrityException("Message integrity is invalid");
         } else {
@@ -55,7 +55,7 @@ public class Integrity {
         Integrity client = new Integrity();
         byte[] hash = server.signMessage("wowzers");
         try {
-            boolean check = server.checkIntegrity(hash, client.signMessage("wowzers"));
+            boolean check = server.checkIntegrity("wowzers", hash);
             System.out.println("Integrity check: " + check);
         } catch (InvalidIntegrityException e) {
             System.out.println("Integrity check didn't work!");
@@ -67,7 +67,7 @@ public class Integrity {
         client = new Integrity();
         hash = server.signMessage("wowzers");
         try {
-            boolean check = server.checkIntegrity(hash, client.signMessage("owzers"));
+            boolean check = server.checkIntegrity("owzers", hash);
             System.out.println("Integrity check: " + check);
         } catch (InvalidIntegrityException e) {
             System.out.println("Integrity result: false");
