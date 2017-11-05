@@ -194,9 +194,11 @@ public class ChatServer {
 	
 	public static void main(String args[]) {
 		ChatServer server = null;
-		if (args.length != 2)
-			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
-		else
+		if (args.length == 2)
 			server = new ChatServer(Integer.parseInt(args[0]), args[1]);
+		else if (args.length == 1) 
+			server = new ChatServer(Integer.parseInt(args[0]), "null");
+		else
+			System.out.println("Incorrect command line entry: java ChatServer <port> (<security>)");
 	}
 }
