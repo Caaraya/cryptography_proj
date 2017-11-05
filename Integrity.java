@@ -2,10 +2,12 @@ package cryptography_proj;
 import cryptography_proj.ChatUtils;
 import javax.crypto.*;
 import java.security.*;
+import java.util.Arrays;
 
 public class Integrity{
 
     private Mac mac;
+    private byte[] tag;
 
     // Generates MAC
     public Integrity() {
@@ -21,21 +23,24 @@ public class Integrity{
 
     // Returns a MAC data tag
     public byte[] SignMessage(String message) {
-        try {  
-            return mac.doFinal(message.getBytes());
+        try {
+            tag = mac.doFinal(message.getBytes());
+            return tag;
         } catch (IllegalStateException e) {
             throw new RuntimeException("MAC was not initialized when signing message");
         }
     }
 
     // Compares two MAC
-    public void CheckIntegrity(Mac key, byte[] tag) {
+    public boolean CheckIntegrity(byte[] tag) {
+        return Arrays.equals(this.tag, tag);
     }
 
     // testing
     public static void main(String[] args) {
         Integrity key = new Integrity();
         byte[] test = key.SignMessage("hello");
+        System.out.println(key.CheckIntegrity(test));
         System.out.println(test);
     }
 }
