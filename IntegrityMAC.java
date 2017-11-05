@@ -75,8 +75,8 @@ public class IntegrityMAC {
 
         // TODO: Remove when done testing
         // *************************************************
-        System.out.print("Data Tag Received: ");
-        for (int i = 0; i < test.length; i++) {
+       /* System.out.print("Data Tag Received: ");
+        for (int i = 0; i < dataTag.length; i++) {
             System.out.print(dataTag[i] + " ");
         }
         System.out.print("\nData Tag Generated: ");
@@ -85,7 +85,7 @@ public class IntegrityMAC {
         }
         System.out.println();
         // *************************************************
-
+        */
         if (!integrity) {
             throw new InvalidIntegrityException("Message integrity is invalid");
         } else {
