@@ -88,7 +88,7 @@ public class ChatServer {
 				}
 				
 				//Authentication
-				if (A) {
+				if (A && !done) {
 					try {
 						// get encrypted hash
 						String encryptedhash = streamIn.readUTF();
@@ -112,7 +112,7 @@ public class ChatServer {
 				}
 				
 				//Initialize Integrity and *extra* Authentication with MACs
-				if(I && A) {
+				if(I && A && !done) {
 					try {
 						// TODO: remove this inner try catch block when done with placeholder
 						try {
@@ -127,7 +127,7 @@ public class ChatServer {
 				}
 
 				//Initialize Integrity only
-				if (I && !A) {
+				if (I && !A && !done) {
 					try {
 						integrity = new Integrity();
 					} catch (RuntimeException e) {
@@ -136,7 +136,7 @@ public class ChatServer {
 				} 
 				
 				//Initialize Confidentiality
-				if (C) {
+				if (C && !done) {
 					
 				}
 				
