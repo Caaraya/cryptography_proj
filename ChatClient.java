@@ -3,7 +3,7 @@ import java.net.*;
 import java.io.*;
 import cryptography_proj.ChatUtils;
 
-public class ChatClient {  
+public class ChatClient { 
 	private Socket 				socket	 = null;
 	private DataInputStream 	streamIn = null;
 	private BufferedReader	 	console  = null;
