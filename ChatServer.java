@@ -42,7 +42,7 @@ public class ChatServer {
 			System.out.println("Binding to port " + port + ", please wait	...");
 			server = new ServerSocket(port);
 			System.out.println("Server started: " + server);
-			
+
 			//Server runs for all time
 			while(true) {
 				//Wait for client connection
@@ -50,7 +50,7 @@ public class ChatServer {
 				socket = server.accept();
 				System.out.println("Client found: " + socket);
 				open();
-				
+
 				//Create security choice array for client
 				String cCia = streamIn.readUTF();
 				int[] cSel = selector(cCia);
@@ -80,7 +80,26 @@ public class ChatServer {
 				
 				//Authentication
 				if (sSel[2] == 1) {
-					
+					try {
+						// get encrypted hash
+						String encryptedhash = streamIn.readUTF();
+						String hash = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", encryptedhash);
+						String expectedhash = util.readFileAsString("cryptography_proj/Server/client_hash.txt");
+						if(!hash.equals(expectedhash)){
+							// failed authentication
+							System.out.println("Incorrect client password: closing connection.");
+							streamOut.writeUTF("Incorrect password, closing connection");
+							streamOut.flush();
+							close();
+							done = true;
+						} else {
+							// succeeded authentication
+							streamOut.writeUTF("Successfully authenticated");
+							streamOut.flush();
+						}
+					} catch(Exception ioe) {
+						System.out.println(ioe.getMessage());
+					}
 				}
 				
 				//Initialize Integrity

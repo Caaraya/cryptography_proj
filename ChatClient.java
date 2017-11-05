@@ -8,6 +8,8 @@ public class ChatClient {
 	private DataInputStream 	streamIn = null;
 	private BufferedReader	 	console  = null;
 	private DataOutputStream	streamOut= null;
+	private Console				c		 = System.console();
+	private ChatUtils 			util     = new ChatUtils();
 
 	public ChatClient(String serverName, int serverPort, String cia) {
 		System.out.println("Establishing connection. Please wait ...");
@@ -40,9 +42,24 @@ public class ChatClient {
 		
 		//Authentication
 		if (sec[2] == 1) {
-			//System.out.println("Enter the password:");
-			//String pw = System.in;
-			//hash, encrypt with public key
+			System.out.println("Enter the password:");
+			try {
+				while ( !console.ready());
+				char[] pw = c.readPassword();
+
+				String hash = util.hashpass(new String(pw));
+				//encypt hash and send
+				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
+				streamOut.writeUTF(encrypted);
+				streamOut.flush();
+				line = streamIn.readUTF();
+				System.out.println(line);
+				if (line.contains("closing"))
+					return;
+
+			} catch (Exception ioe) {
+				System.out.println(ioe.getMessage());
+			}
 		}
 		
 		//Initialize Integrity
