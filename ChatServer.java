@@ -10,8 +10,7 @@ public class ChatServer {
 
 	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
-  private Console 			c 			= System.console();
-
+	private Console 			c 			= System.console();
 	private ChatUtils 			util        = new ChatUtils();
 
 	public ChatServer(int port, String sCia) {
@@ -81,7 +80,7 @@ public class ChatServer {
 				}
 				
 				//Authentication
-				if (sSel[2] == 1) {
+				if (sSel[2] == 1 && !done) {
 					try {
 						// get encrypted hash
 						String encryptedhash = streamIn.readUTF();
@@ -105,12 +104,12 @@ public class ChatServer {
 				}
 				
 				//Initialize Integrity
-				if (sSel[1] == 1) {
+				if (sSel[1] == 1 && !done) {
 					
 				}
 				
 				//Initialize Confidentiality
-				if (sSel[0] == 1) {
+				if (sSel[0] == 1 && !done) {
 					
 				}
 				
@@ -195,9 +194,11 @@ public class ChatServer {
 	
 	public static void main(String args[]) {
 		ChatServer server = null;
-		if (args.length != 2)
-			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
-		else
+		if (args.length == 2)
 			server = new ChatServer(Integer.parseInt(args[0]), args[1]);
+		else if (args.length == 1) 
+			server = new ChatServer(Integer.parseInt(args[0]), "null");
+		else
+			System.out.println("Incorrect command line entry: java ChatServer <port> (<security>)");
 	}
 }

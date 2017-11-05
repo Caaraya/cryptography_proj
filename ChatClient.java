@@ -149,9 +149,11 @@ public class ChatClient {
 	
 	public static void main(String args[]) {
 		ChatClient client = null;
-		if (args.length != 3)
-			System.out.println("Incorrect command line entry: java ChatClient <connection> <port> <security>");
-		else
+		if (args.length == 3)
 			client = new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
+		else if (args.length == 2)
+			client = new ChatClient(args[0], Integer.parseInt(args[1]), "null");
+		else
+			System.out.println("Incorrect command line entry: java ChatClient <connection> <port> (<security>)");
 	}
 }
