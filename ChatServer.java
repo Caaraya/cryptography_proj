@@ -7,9 +7,11 @@ public class ChatServer {
 	private Socket				socket		= null;
 	private ServerSocket		server		= null;
 	private DataInputStream		streamIn	= null;
+
 	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
   private Console 			c 			= System.console();
+
 	private ChatUtils 			util        = new ChatUtils();
 
 	public ChatServer(int port, String sCia) {
@@ -21,6 +23,7 @@ public class ChatServer {
 			//get password for server, check
 			System.out.println("Enter the password:");
 			try {
+
 				while (!console.ready());
 				char[] pw = c.readPassword();
 
@@ -41,7 +44,7 @@ public class ChatServer {
 			System.out.println("Binding to port " + port + ", please wait	...");
 			server = new ServerSocket(port);
 			System.out.println("Server started: " + server);
-			
+
 			//Server runs for all time
 			while(true) {
 				//Wait for client connection
@@ -49,7 +52,7 @@ public class ChatServer {
 				socket = server.accept();
 				System.out.println("Client found: " + socket);
 				open();
-				
+
 				//Create security choice array for client
 				String cCia = streamIn.readUTF();
 				int[] cSel = selector(cCia);
@@ -78,18 +81,37 @@ public class ChatServer {
 				}
 				
 				//Authentication
-				if (sSel[2] == 1 && !done) {
-					System.out.println("A");
+				if (sSel[2] == 1) {
+					try {
+						// get encrypted hash
+						String encryptedhash = streamIn.readUTF();
+						String hash = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", encryptedhash);
+						String expectedhash = util.readFileAsString("cryptography_proj/Server/client_hash.txt");
+						if(!hash.equals(expectedhash)){
+							// failed authentication
+							System.out.println("Incorrect client password: closing connection.");
+							streamOut.writeUTF("Incorrect password, closing connection");
+							streamOut.flush();
+							close();
+							done = true;
+						} else {
+							// succeeded authentication
+							streamOut.writeUTF("Successfully authenticated");
+							streamOut.flush();
+						}
+					} catch(Exception ioe) {
+						System.out.println(ioe.getMessage());
+					}
 				}
 				
 				//Initialize Integrity
-				if (sSel[1] == 1 && !done) {
-					System.out.println("I");
+				if (sSel[1] == 1) {
+					
 				}
 				
 				//Initialize Confidentiality
-				if (sSel[0] == 1 && !done) {
-					System.out.println("C");
+				if (sSel[0] == 1) {
+					
 				}
 				
 				//Chat loop

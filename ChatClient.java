@@ -3,12 +3,13 @@ import java.net.*;
 import java.io.*;
 import cryptography_proj.ChatUtils;
 
-public class ChatClient {  
-	private Socket 				socket		= null;
-	private DataInputStream 	streamIn	= null;
-	private BufferedReader	 	console		= null;
-	private DataOutputStream	streamOut	= null;
-	private Console				c 			= System.console();
+public class ChatClient { 
+	private Socket 				socket	 = null;
+	private DataInputStream 	streamIn = null;
+	private BufferedReader	 	console  = null;
+	private DataOutputStream	streamOut= null;
+	private Console				c		 = System.console();
+	private ChatUtils 			util     = new ChatUtils();
 
 	public ChatClient(String serverName, int serverPort, String cia) {
 		System.out.println("Establishing connection. Please wait ...");
@@ -43,13 +44,22 @@ public class ChatClient {
 		if (sec[2] == 1) {
 			System.out.println("Enter the password:");
 			try {
-				while(!console.ready());
+				while ( !console.ready());
 				char[] pw = c.readPassword();
-				//send to server
-			} catch (IOException ioe) {
+
+				String hash = util.hashpass(new String(pw));
+				//encypt hash and send
+				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
+				streamOut.writeUTF(encrypted);
+				streamOut.flush();
+				line = streamIn.readUTF();
+				System.out.println(line);
+				if (line.contains("closing"))
+					return;
+
+			} catch (Exception ioe) {
 				System.out.println(ioe.getMessage());
 			}
-			//hash, encrypt with public key
 		}
 		
 		//Initialize Integrity
