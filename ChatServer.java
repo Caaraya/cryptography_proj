@@ -2,6 +2,8 @@ package cryptography_proj;
 import java.net.*;
 import java.io.*;
 import cryptography_proj.ChatUtils;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 
 public class ChatServer {  
 	private Socket				socket		= null;
@@ -14,12 +16,18 @@ public class ChatServer {
 
 	private ChatUtils 			util        = new ChatUtils();
 
+	private Integrity integrity;
+	private IntegrityMAC integrityMAC;
+
 	public ChatServer(int port, String sCia) {
 		System.out.println("Beginning server");
 		//Create server's security array
-		int[] sSel = selector(sCia);
+		boolean[] sSel = selector(sCia);
+		final boolean C = sSel[0];
+		final boolean I = sSel[1];
+		final boolean A = sSel[2];
 		
-		if (sSel[2] == 1) {
+		if (A) {
 			//get password for server, check
 			System.out.println("Enter the password:");
 			try {
@@ -55,7 +63,7 @@ public class ChatServer {
 
 				//Create security choice array for client
 				String cCia = streamIn.readUTF();
-				int[] cSel = selector(cCia);
+				boolean[] cSel = selector(cCia);
 				
 				boolean done = false;
 				
@@ -81,7 +89,7 @@ public class ChatServer {
 				}
 				
 				//Authentication
-				if (sSel[2] == 1) {
+				if (A) {
 					try {
 						// get encrypted hash
 						String encryptedhash = streamIn.readUTF();
@@ -104,13 +112,32 @@ public class ChatServer {
 					}
 				}
 				
-				//Initialize Integrity
-				if (sSel[1] == 1) {
-					
+				//Initialize Integrity and *extra* Authentication with MACs
+				if(I && A) {
+					try {
+						// TODO: remove this inner try catch block when done with placeholder
+						try {
+							Key key = ChatUtils.makeAESKey(); //TODO: This is just a placeholder till I figure out how to receive they key
+							integrityMAC = new IntegrityMAC(key);
+						} catch (NoSuchAlgorithmException e) {
+							// TODO: remove
+						}
+					} catch (RuntimeException e) {
+						// TODO: Do you want message to user??
+					}
 				}
+
+				//Initialize Integrity only
+				if (I && !A) {
+					try {
+						integrity = new Integrity();
+					} catch (RuntimeException e) {
+						// TODO: Do you want message to user??
+					}
+				} 
 				
 				//Initialize Confidentiality
-				if (sSel[0] == 1) {
+				if (C) {
 					
 				}
 				
@@ -121,13 +148,53 @@ public class ChatServer {
 						//Receive data
 						if (streamIn.available() > 0) {
 							line = streamIn.readUTF();
-							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
-								//decrypt CI
-							} else if (sSel[0] == 1) {
+							if (C && I) {
+								if (A) { //decrypt for CIA
+									//TODO: ADD CONFIDENTIALITY DECRYPTING!! ***
+									//TODO: parse input to get message and dataTag
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
+									try {
+										integrityMAC.checkIntegrity(message, dataTag);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity and/or authentication was invalid! How do we want
+										//      to handle this? Alert the user? Close the connection?
+									}
+								} else { //decrypt for CI
+									//TODO: ADD CONFIDENTIALITY DECRYPTING!! ***
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] digest = {0}; // TODO: will be intialized to the hash component
+									try {
+										integrity.checkIntegrity(message, digest);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
+										//      Close the connection?
+									}
+								}
+							} else if (C) {
 								//decrypt C
-							} else if (sSel[1] == 1) {
-								//decrypt I
-							}
+							} else if (I) { //decrypt for I
+								if (A) { //decrypt for IA
+									//TODO: parse input to get message and dataTag
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
+									try {
+										integrityMAC.checkIntegrity(message, dataTag);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity and/or authentication was invalid! How do we want
+										//      to handle this? Alert the user? Close the connection?
+									}
+								} else { //decrypt for I
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] digest = {0}; // TODO: will be intialized to the hash component
+									try {
+										integrity.checkIntegrity(message, digest);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
+										//      Close the connection?
+									}
+								}
+							}	
 							System.out.println(line);
 							done = line.equals(".bye");
 						}
@@ -136,11 +203,11 @@ public class ChatServer {
 						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
-							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
+							if ( (C) && (I) ) {
 								//apply CI
-							} else if (sSel[0] == 1) {
+							} else if (C) {
 								//apply C
-							} else if (sSel[1] == 1) {
+							} else if (I) {
 								//apply I
 							}
 							
@@ -167,22 +234,22 @@ public class ChatServer {
 	}
 	
 	//Create security choices array
-	public int[] selector(String sel) {
-		int[] choice = new int[3];
+	public boolean[] selector(String sel) {
+		boolean[] choice = new boolean[3];
 		if (sel.contains("C") || sel.contains("c"))
-			choice[0] = 1;
+			choice[0] = true;
 		else
-			choice[0] = 0;
+			choice[0] = false;
 		
 		if (sel.contains("I") || sel.contains("i"))
-			choice[1] = 1;
+			choice[1] = true;
 		else
-			choice[1] = 0;
+			choice[1] = false;
 		
 		if (sel.contains("A") || sel.contains("a"))
-			choice[2] = 1;
+			choice[2] = true;
 		else
-			choice[2] = 0;
+			choice[2] = false;
 		
 		return choice;
 	}
