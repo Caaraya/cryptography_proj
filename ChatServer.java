@@ -12,16 +12,21 @@ public class ChatServer {
 
 	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
-  private Console 			c 			= System.console();
-
+	private Console 			c 			= System.console();
 	private ChatUtils 			util        = new ChatUtils();
+
+	private Integrity integrity;
+	private IntegrityMAC integrityMAC;
 
 	public ChatServer(int port, String sCia) {
 		System.out.println("Beginning server");
 		//Create server's security array
-		int[] sSel = selector(sCia);
+		boolean[] sSel = selector(sCia);
+		final boolean C = sSel[0];
+		final boolean I = sSel[1];
+		final boolean A = sSel[2];
 		
-		if (sSel[2] == 1) {
+		if (A) {
 			//get password for server, check
 			System.out.println("Enter the password:");
 			try {
@@ -57,7 +62,7 @@ public class ChatServer {
 
 				//Create security choice array for client
 				String cCia = streamIn.readUTF();
-				int[] cSel = selector(cCia);
+				boolean[] cSel = selector(cCia);
 				
 				boolean done = false;
 				
@@ -83,7 +88,7 @@ public class ChatServer {
 				}
 				
 				//Authentication
-				if (sSel[2] == 1) {
+				if (A && !done) {
 					try {
 						// get encrypted hash
 						String encryptedhash = streamIn.readUTF();
@@ -106,17 +111,32 @@ public class ChatServer {
 					}
 				}
 				
-				//Initialize Integrity
-				if (sSel[1] == 1) {
-					
+				//Initialize Integrity and *extra* Authentication with MACs
+				if(I && A && !done) {
+					try {
+						// TODO: remove this inner try catch block when done with placeholder
+						try {
+							Key key = ChatUtils.makeAESKey(); //TODO: This is just a placeholder till I figure out how to receive they key
+							integrityMAC = new IntegrityMAC(key);
+						} catch (NoSuchAlgorithmException e) {
+							// TODO: remove
+						}
+					} catch (RuntimeException e) {
+						// TODO: Do you want message to user??
+					}
 				}
 
-				// needed key and initialization vector
-				SecretKey aesKey = null;
-				byte[] iv = null;
-
+				//Initialize Integrity only
+				if (I && !A && !done) {
+					try {
+						integrity = new Integrity();
+					} catch (RuntimeException e) {
+						// TODO: Do you want message to user??
+					}
+				} 
+				
 				//Initialize Confidentiality
-				if (sSel[0] == 1) {
+				if (C && !done) {
 					try {
 						String encryptedkey = streamIn.readUTF();
 						String encryptediv = streamIn.readUTF();
@@ -139,25 +159,70 @@ public class ChatServer {
 						//Receive data
 						if (streamIn.available() > 0) {
 							line = streamIn.readUTF();
-							if ( (sSel[0] == 1) && (sSel[1] == 1) && !done) {
-								//decrypt CI
-								try {
-									line = util.decryptAES(iv, aesKey, line);
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
+							if (C && I) {
+								if (A) { //decrypt for CIA
+									try {
+                    line = util.decryptAES(iv, aesKey, line);
+                  } catch (Exception ioe) {
+                    System.out.println(ioe.getMessage());
+                    line = ".bye";
+                  }
+									//TODO: parse input to get message and dataTag
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
+									try {
+										integrityMAC.checkIntegrity(message, dataTag);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity and/or authentication was invalid! How do we want
+										//      to handle this? Alert the user? Close the connection?
+									}
+								} else { //decrypt for CI
+									  try {
+                      line = util.decryptAES(iv, aesKey, line);
+                     } catch (Exception ioe) {
+                      System.out.println(ioe.getMessage());
+                      line = ".bye";
+                    }
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] digest = {0}; // TODO: will be intialized to the hash component
+									try {
+										integrity.checkIntegrity(message, digest);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
+										//      Close the connection?
+									}
 								}
-							} else if (sSel[0] == 1 && !done) {
+							} else if (C) {
 								//decrypt C
-								try {
-									line = util.decryptAES(iv, aesKey, line);
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
+                 try {
+                  line = util.decryptAES(iv, aesKey, line);
+                } catch (Exception ioe) {
+                  System.out.println(ioe.getMessage());
+                  line = ".bye";
+                }
+                
+							} else if (I) { //decrypt for I
+								if (A) { //decrypt for IA
+									//TODO: parse input to get message and dataTag
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
+									try {
+										integrityMAC.checkIntegrity(message, dataTag);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity and/or authentication was invalid! How do we want
+										//      to handle this? Alert the user? Close the connection?
+									}
+								} else { //decrypt for I
+									String message = "TODO"; // TODO: will be initialized to the message component
+									byte[] digest = {0}; // TODO: will be intialized to the hash component
+									try {
+										integrity.checkIntegrity(message, digest);
+									} catch (InvalidIntegrityException e) {
+										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
+										//      Close the connection?
+									}
 								}
-							} else if (sSel[1] == 1 && !done) {
-								//decrypt I
-							}
+							}	
 							System.out.println(line);
 							done = line.equals(".bye");
 						}
@@ -166,24 +231,25 @@ public class ChatServer {
 						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
-							if ( (sSel[0] == 1) && (sSel[1] == 1)  && !done) {
+							if ( (C) && (I) &&!done ) {
 								//apply CI
-								try {
-									line = util.encryptAES(iv, aesKey, line);
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
-								}
-								
-							} else if (sSel[0] == 1 && !done) {
+                try {
+                  line = util.encryptAES(iv, aesKey, line);
+                } catch (Exception ioe) {
+                  System.out.println(ioe.getMessage());
+                  line = ".bye";
+                }
+
+							} else if (C && !done) {
 								//apply C
-								try {
-									line = util.encryptAES(iv, aesKey, line);
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
-								}
-							} else if (sSel[1] == 1 && !done) {
+                 try {
+                  line = util.encryptAES(iv, aesKey, line);
+                } catch (Exception ioe) {
+                  System.out.println(ioe.getMessage());
+                  line = ".bye";
+                }
+
+							} else if (I && !done) {
 								//apply I
 							}
 							
@@ -210,22 +276,22 @@ public class ChatServer {
 	}
 	
 	//Create security choices array
-	public int[] selector(String sel) {
-		int[] choice = new int[3];
+	public boolean[] selector(String sel) {
+		boolean[] choice = new boolean[3];
 		if (sel.contains("C") || sel.contains("c"))
-			choice[0] = 1;
+			choice[0] = true;
 		else
-			choice[0] = 0;
+			choice[0] = false;
 		
 		if (sel.contains("I") || sel.contains("i"))
-			choice[1] = 1;
+			choice[1] = true;
 		else
-			choice[1] = 0;
+			choice[1] = false;
 		
 		if (sel.contains("A") || sel.contains("a"))
-			choice[2] = 1;
+			choice[2] = true;
 		else
-			choice[2] = 0;
+			choice[2] = false;
 		
 		return choice;
 	}
@@ -238,9 +304,11 @@ public class ChatServer {
 	
 	public static void main(String args[]) {
 		ChatServer server = null;
-		if (args.length != 2)
-			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
-		else
+		if (args.length == 2)
 			server = new ChatServer(Integer.parseInt(args[0]), args[1]);
+		else if (args.length == 1) 
+			server = new ChatServer(Integer.parseInt(args[0]), "null");
+		else
+			System.out.println("Incorrect command line entry: java ChatServer <port> (<security>)");
 	}
 }
