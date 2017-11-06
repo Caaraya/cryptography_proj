@@ -98,35 +98,12 @@ public class ChatUtils{
         byte[] str = null;
         if (key == null) return "";
         pkCipher.init(Cipher.ENCRYPT_MODE, key);
-        byte[] reCipherBytes = Base64.getDecoder().decode(msg);
-        str = pkCipher.doFinal(reCipherBytes);
-        return Base64.getEncoder().encodeToString(str);
-    }
-    public static String encryptPublicRSAALT(String path, String msg) throws Exception
-    {
-        Cipher pkCipher = Cipher.getInstance("RSA");
-        PublicKey key = getPublicKey(path);
-        byte[] str = null;
-        if (key == null) return "";
-        pkCipher.init(Cipher.ENCRYPT_MODE, key);
         byte[] reCipherBytes = msg.getBytes("Latin1");
         str = pkCipher.doFinal(reCipherBytes);
         return Base64.getEncoder().encodeToString(str);
     }
 
     public static String decryptPrivateRSA(String path, String msg) throws Exception
-    {
-        Cipher pkCipher = Cipher.getInstance("RSA");
-        PrivateKey key = getPrivateKey(path);
-        byte[] str = null;
-        if (key == null) return "";
-        pkCipher.init(Cipher.DECRYPT_MODE, key);
-        byte[] reCipherBytes = Base64.getDecoder().decode(msg);
-        str = pkCipher.doFinal(reCipherBytes);
-        return Base64.getEncoder().encodeToString(str);
-    }
-
-    public static String decryptPrivateRSAALT(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
         PrivateKey key = getPrivateKey(path);
