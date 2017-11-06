@@ -151,7 +151,6 @@ public class ChatClient {
 						}
 					} else if (I) {
 						//apply I
-            			byte[] digest = integrity.signMessage(line);
             			//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
 					}		
 					streamOut.writeUTF(line);
