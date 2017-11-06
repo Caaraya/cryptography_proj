@@ -116,7 +116,7 @@ public class ChatServer {
 					try {
 						// TODO: remove this inner try catch block when done with placeholder
 						try {
-							Key key = ChatUtils.makeAESKey(); //TODO: This is just a placeholder till I figure out how to receive they key
+							Key key = util.makeAESKey(); //TODO: This is just a placeholder till I figure out how to receive they key
 							integrityMAC = new IntegrityMAC(key);
 						} catch (NoSuchAlgorithmException e) {
 							// TODO: remove
@@ -139,15 +139,17 @@ public class ChatServer {
 				Key aesKey = null;
 				byte[] iv = null;
 
-				//Initialize Confidentiality
+				//Initialize Confidentiality make it work!
 				if (C && !done) {
 					try {
-						String encryptedkey = streamIn.readUTF();
-						String encryptediv = streamIn.readUTF();
-						String key = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptedkey);
-						aesKey = util.getKey(key);
-						iv = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptediv).getBytes();
-						streamOut.writeUTF("Got aes key and initialization vector");
+						String message = streamIn.readUTF();
+						message = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", message);
+						//aesKey = util.getKey(key);
+						//iv = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptediv).getBytes();
+						if(message.equals("ping client for encryption"))
+							streamOut.writeUTF(util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", "Successfully received encrypted message"));
+						else
+							streamOut.writeUTF("Could not decrypt message, closing connection");
 						streamOut.flush();
 					} catch (Exception ioe) {
 						System.out.println(ioe.getMessage());
@@ -166,11 +168,11 @@ public class ChatServer {
 							if (C && I) {
 								if (A) { //decrypt for CIA
 									try {
-                    line = util.decryptAES(iv, aesKey, line);
-                  } catch (Exception ioe) {
-                    System.out.println(ioe.getMessage());
-                    line = ".bye";
-                  }
+										line = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", line);
+									} catch (Exception ioe) {
+										System.out.println(ioe.getMessage());
+										line = ".bye";
+									}
 									//TODO: parse input to get message and dataTag
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
@@ -182,11 +184,11 @@ public class ChatServer {
 									}
 								} else { //decrypt for CI
 									  try {
-                      line = util.decryptAES(iv, aesKey, line);
-                     } catch (Exception ioe) {
-                      System.out.println(ioe.getMessage());
-                      line = ".bye";
-                    }
+											line = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", line);
+										} catch (Exception ioe) {
+											System.out.println(ioe.getMessage());
+											line = ".bye";
+										}
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] digest = {0}; // TODO: will be intialized to the hash component
 									try {
@@ -198,12 +200,12 @@ public class ChatServer {
 								}
 							} else if (C) {
 								//decrypt C
-                 try {
-                  line = util.decryptAES(iv, aesKey, line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
+								try {
+									line = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
                 
 							} else if (I) { //decrypt for I
 								if (A) { //decrypt for IA
@@ -238,7 +240,7 @@ public class ChatServer {
 							if ( (C) && (I) &&!done ) {
 								//apply CI
                 try {
-                  line = util.encryptAES(iv, aesKey, line);
+                  line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
                 } catch (Exception ioe) {
                   System.out.println(ioe.getMessage());
                   line = ".bye";
@@ -247,7 +249,7 @@ public class ChatServer {
 							} else if (C && !done) {
 								//apply C
                  try {
-                  line = util.encryptAES(iv, aesKey, line);
+                  line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
                 } catch (Exception ioe) {
                   System.out.println(ioe.getMessage());
                   line = ".bye";

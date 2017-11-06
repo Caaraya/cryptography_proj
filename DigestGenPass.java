@@ -169,9 +169,9 @@ class DigestGenPass
     public static void main(String[] args)
     {
         try{
-            String result = encryptPublicRSA("Client/serverpublic.key", "messages");
+            String result = encryptPublicRSAALT("Client/serverpublic.key", "ping client for encryption");
             System.out.println(result);
-            result = decryptPrivateRSA("Server/serverprivate.key", result);
+            result = decryptPrivateRSAALT("Server/serverprivate.key", result);
             System.out.println(result);
             Key aeskey = makeAESKey();
             System.out.println(aeskey.getEncoded().length);
