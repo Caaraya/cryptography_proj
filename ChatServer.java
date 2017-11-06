@@ -235,7 +235,7 @@ public class ChatServer {
 						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
-							if ( (C) && (I) &&!done ) {
+							if (C && I && !done) {
 								//apply CI
 								try {
 									line = util.encryptAES(iv, aesKey, line);

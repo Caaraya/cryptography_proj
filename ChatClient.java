@@ -47,7 +47,7 @@ public class ChatClient {
 		final boolean I = sec[1];
 		final boolean A = sec[2];
 		
-		//Authentication
+		//Initialize Authentication
 		if (A) {
 			System.out.println("Enter the password:");
 			try {
@@ -89,12 +89,10 @@ public class ChatClient {
 				// TODO: Do you want message to user??
 			}
 		} 
-		
-		// needed key and initialization vector
-		Key aesKey = null;
-		byte[] iv = null;
 
 		//Initialize Confidentiality
+		Key aesKey = null;
+		byte[] iv = null;
 		if (C) {
 			try{
 				aesKey = util.makeAESKey();
@@ -121,7 +119,7 @@ public class ChatClient {
 				if (console.ready()) { 
 					line = console.readLine();
 					if (C && I) {
-						if (A) { //apply CIA
+						if (A) { //apply CIA (A with MACs)
              				byte[] mac = integrityMAC.signMessage(line);
               				try {
 								line = util.encryptAES(iv, aesKey, line);
@@ -149,7 +147,7 @@ public class ChatClient {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-					} else if (I) { //apply I
+					} else if (I) { //apply I only
 						if (A) { //apply I with MAC
 							try {
 								byte[] mac = integrityMAC.signMessage(line);
@@ -158,7 +156,7 @@ public class ChatClient {
 								System.out.println(e.getMessage());
 								line = ".bye";
 							}
-						} else { //apply I with hash
+						} else { //apply I with digest
 							byte[] digest = integrity.signMessage(line);
 							//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
 
