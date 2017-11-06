@@ -149,9 +149,20 @@ public class ChatClient {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-					} else if (I) {
-						//apply I
-            			//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
+					} else if (I) { //apply I
+						if (A) { //apply I with MAC
+							try {
+								byte[] mac = integrityMAC.signMessage(line);
+								//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
+							} catch (RuntimeException e) {
+								System.out.println(e.getMessage());
+								line = ".bye";
+							}
+						} else { //apply I with hash
+							byte[] digest = integrity.signMessage(line);
+							//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
+
+						}
 					}		
 					streamOut.writeUTF(line);
 					streamOut.flush();
