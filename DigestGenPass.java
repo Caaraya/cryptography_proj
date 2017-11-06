@@ -1,4 +1,3 @@
-package cryptography_proj;
 import java.lang.*;
 import java.io.*;
 import java.security.*;
@@ -6,14 +5,14 @@ import java.math.BigInteger;
 import java.nio.*;
 import javax.crypto.*;
 import java.util.*;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.spec.IvParameterSpec;
 
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-public class ChatUtils{
-
+class DigestGenPass
+{
     private static PrivateKey getPrivateKey(String loc)
     {
         PrivateKey privateKey = null;
@@ -155,6 +154,8 @@ public class ChatUtils{
         SecretKey aeskey = null;
         try{
             byte[] data = key.getBytes("Latin1");
+            System.out.println(data.length);
+            System.out.println(new String(data, "Latin1"));
             aeskey = new SecretKeySpec(data, 0, data.length, "AES");
         }
         catch (Exception ex){
@@ -165,29 +166,37 @@ public class ChatUtils{
         return aeskey;
     }
 
-    public String hashpass(String plainpass){
-        String str;
+    public static void main(String[] args)
+    {
         try{
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte [] md5sum = md.digest(plainpass.getBytes());
-            str = String.format("%032X", new BigInteger(1, md5sum));
-        } catch (Exception ex){
-            str = ex.getMessage();
-        }
-        return str;
-    }
+            String result = encryptPublicRSA("Client/serverpublic.key", "messages");
+            System.out.println(result);
+            result = decryptPrivateRSA("Server/serverprivate.key", result);
+            System.out.println(result);
+            Key aeskey = makeAESKey();
+            System.out.println(aeskey.getEncoded().length);
+            System.out.println(new String(aeskey.getEncoded(), "Latin1"));
+            String encrypted = encryptPublicRSAALT("Client/serverpublic.key", new String(aeskey.getEncoded(), "Latin1"));
+            String decrypted = decryptPrivateRSAALT("Server/serverprivate.key", encrypted);
+            System.out.println(decrypted);
+            Key aesKey = getKey(decrypted);
+            byte[] iv = generateIV();
+            System.out.println(new String(iv, "Latin1"));
+            encrypted = encryptPublicRSAALT("Client/serverpublic.key", new String(iv, "Latin1"));
+            decrypted = decryptPrivateRSAALT("Server/serverprivate.key", encrypted);
+            System.out.println(decrypted);
+            System.out.println(iv.length);
+            System.out.println(decrypted.getBytes().length);
 
-    public String readFileAsString(String filePath) throws IOException {
-        StringBuffer fileData = new StringBuffer();
-        BufferedReader reader = new BufferedReader(
-                new FileReader(filePath));
-        char[] buf = new char[1024];
-        int numRead=0;
-        while((numRead=reader.read(buf)) != -1){
-            String readData = String.valueOf(buf, 0, numRead);
-            fileData.append(readData);
+            result = encryptAES(iv, aeskey, "symmetric encryption");
+            System.out.println(result.getBytes("Latin1").length);
+            result = decryptAES(decrypted.getBytes(), aesKey, result);
+            System.out.println(new String(aeskey.getEncoded(), "Latin1"));
+            System.out.println(new String(aesKey.getEncoded(), "Latin1"));
+            System.out.println(result);
         }
-        reader.close();
-        return fileData.toString();
+        catch(Exception ioe){
+            System.out.println(ioe.getMessage());
+        }
     }
 }

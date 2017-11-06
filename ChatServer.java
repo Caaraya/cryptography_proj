@@ -2,8 +2,8 @@ package cryptography_proj;
 import java.net.*;
 import java.io.*;
 import cryptography_proj.ChatUtils;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import javax.crypto.*;
 
 public class ChatServer {  
 	private Socket				socket		= null;
@@ -137,7 +137,19 @@ public class ChatServer {
 				
 				//Initialize Confidentiality
 				if (C && !done) {
-					
+					try {
+						String encryptedkey = streamIn.readUTF();
+						String encryptediv = streamIn.readUTF();
+						String key = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptedkey);
+						aesKey = util.getKey(key);
+						iv = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptediv).getBytes();
+						streamOut.writeUTF("Got aes key and initialization vector");
+						streamOut.flush();
+					} catch (Exception ioe) {
+						System.out.println(ioe.getMessage());
+						streamOut.writeUTF("Error initializing closing client");
+						streamOut.flush();
+					}
 				}
 				
 				//Chat loop
@@ -149,7 +161,12 @@ public class ChatServer {
 							line = streamIn.readUTF();
 							if (C && I) {
 								if (A) { //decrypt for CIA
-									//TODO: ADD CONFIDENTIALITY DECRYPTING!! ***
+									try {
+                    line = util.decryptAES(iv, aesKey, line);
+                  } catch (Exception ioe) {
+                    System.out.println(ioe.getMessage());
+                    line = ".bye";
+                  }
 									//TODO: parse input to get message and dataTag
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
@@ -160,7 +177,12 @@ public class ChatServer {
 										//      to handle this? Alert the user? Close the connection?
 									}
 								} else { //decrypt for CI
-									//TODO: ADD CONFIDENTIALITY DECRYPTING!! ***
+									  try {
+                      line = util.decryptAES(iv, aesKey, line);
+                     } catch (Exception ioe) {
+                      System.out.println(ioe.getMessage());
+                      line = ".bye";
+                    }
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] digest = {0}; // TODO: will be intialized to the hash component
 									try {
@@ -172,6 +194,13 @@ public class ChatServer {
 								}
 							} else if (C) {
 								//decrypt C
+                 try {
+                  line = util.decryptAES(iv, aesKey, line);
+                } catch (Exception ioe) {
+                  System.out.println(ioe.getMessage());
+                  line = ".bye";
+                }
+                
 							} else if (I) { //decrypt for I
 								if (A) { //decrypt for IA
 									//TODO: parse input to get message and dataTag
@@ -202,11 +231,25 @@ public class ChatServer {
 						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
-							if ( (C) && (I) ) {
+							if ( (C) && (I) &&!done ) {
 								//apply CI
-							} else if (C) {
+                try {
+                  line = util.encryptAES(iv, aesKey, line);
+                } catch (Exception ioe) {
+                  System.out.println(ioe.getMessage());
+                  line = ".bye";
+                }
+
+							} else if (C && !done) {
 								//apply C
-							} else if (I) {
+                 try {
+                  line = util.encryptAES(iv, aesKey, line);
+                } catch (Exception ioe) {
+                  System.out.println(ioe.getMessage());
+                  line = ".bye";
+                }
+
+							} else if (I && !done) {
 								//apply I
 							}
 							
