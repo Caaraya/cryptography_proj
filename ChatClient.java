@@ -122,22 +122,23 @@ public class ChatClient {
 					line = console.readLine();
 					if (C && I) {
 						if (A) { //apply CIA
-              byte[] mac = integrityMAC.signMessage(line);
-              try {
-							  line = util.encryptAES(iv, aesKey, line);
-						  } catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-              }
+             				byte[] mac = integrityMAC.signMessage(line);
+              				try {
+								line = util.encryptAES(iv, aesKey, line);
+						  	} catch (Exception ioe) {
+								System.out.println(ioe.getMessage());
+								line = ".bye";
+              				}
 							//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
+
 						} else { //apply CI
 							byte[] digest = integrity.signMessage(line);
-              try {
-							  line = util.encryptAES(iv, aesKey, line);
-						  } catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-              }
+              				try {
+								line = util.encryptAES(iv, aesKey, line);
+						  	} catch (Exception ioe) {
+								System.out.println(ioe.getMessage());
+								line = ".bye";
+             				}
 							//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
 						}
 					} else if (C) {
@@ -150,8 +151,8 @@ public class ChatClient {
 						}
 					} else if (I) {
 						//apply I
-            byte[] digest = integrity.signMessage(line);
-            //TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
+            			byte[] digest = integrity.signMessage(line);
+            			//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
 					}		
 					streamOut.writeUTF(line);
 					streamOut.flush();
@@ -161,12 +162,12 @@ public class ChatClient {
 					line = streamIn.readUTF();
 					if (C && I) {
 						if (A) { //decrypt for CIA
-              try {
-							  line = util.decryptAES(iv, aesKey, line); // Decrypt
-						  } catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-					  	}
+             				try {
+								line = util.decryptAES(iv, aesKey, line); // Decrypt
+							} catch (Exception ioe) {
+								System.out.println(ioe.getMessage());
+							  	line = ".bye";
+					  		}
 
 							//TODO: parse input to get message and dataTag
 							String message = "TODO"; // TODO: will be initialized to the message component
@@ -178,12 +179,12 @@ public class ChatClient {
 								//      to handle this? Alert the user? Close the connection?
 							}
 						} else { //decrypt for CI
-              try {
-							  line = util.decryptAES(iv, aesKey, line); // Decrypt
-						  } catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-						  }
+            				try {
+								line = util.decryptAES(iv, aesKey, line); // Decrypt
+						  	} catch (Exception ioe) {
+								System.out.println(ioe.getMessage());
+								line = ".bye";
+							}
 							String message = "TODO"; // TODO: will be initialized to the message component
 							byte[] digest = {0}; // TODO: will be intialized to the hash component
 							try {
@@ -196,7 +197,7 @@ public class ChatClient {
 
 					} else if (C) {
 						//decrypt for C
-            try {
+            			try {
 							line = util.decryptAES(iv, aesKey, line);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());

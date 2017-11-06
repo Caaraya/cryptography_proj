@@ -166,11 +166,11 @@ public class ChatServer {
 							if (C && I) {
 								if (A) { //decrypt for CIA
 									try {
-                    line = util.decryptAES(iv, aesKey, line);
-                  } catch (Exception ioe) {
-                    System.out.println(ioe.getMessage());
-                    line = ".bye";
-                  }
+										line = util.decryptAES(iv, aesKey, line);
+									} catch (Exception ioe) {
+										System.out.println(ioe.getMessage());
+										line = ".bye";
+									}
 									//TODO: parse input to get message and dataTag
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
@@ -181,12 +181,12 @@ public class ChatServer {
 										//      to handle this? Alert the user? Close the connection?
 									}
 								} else { //decrypt for CI
-									  try {
-                      line = util.decryptAES(iv, aesKey, line);
-                     } catch (Exception ioe) {
-                      System.out.println(ioe.getMessage());
-                      line = ".bye";
-                    }
+									try {
+										line = util.decryptAES(iv, aesKey, line);
+									} catch (Exception ioe) {
+										System.out.println(ioe.getMessage());
+										line = ".bye";
+									}
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] digest = {0}; // TODO: will be intialized to the hash component
 									try {
@@ -198,12 +198,12 @@ public class ChatServer {
 								}
 							} else if (C) {
 								//decrypt C
-                 try {
-                  line = util.decryptAES(iv, aesKey, line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
+								try {
+									line = util.decryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
                 
 							} else if (I) { //decrypt for I
 								if (A) { //decrypt for IA
@@ -237,21 +237,21 @@ public class ChatServer {
 							done = line.equals(".bye");
 							if ( (C) && (I) &&!done ) {
 								//apply CI
-                try {
-                  line = util.encryptAES(iv, aesKey, line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
+								try {
+									line = util.encryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
 
 							} else if (C && !done) {
 								//apply C
-                 try {
-                  line = util.encryptAES(iv, aesKey, line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
+								try {
+									line = util.encryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
 
 							} else if (I && !done) {
 								//apply I
