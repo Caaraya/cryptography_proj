@@ -169,6 +169,7 @@ public class ChatServer {
 								if (A) { //decrypt for CIA
 									try {
 										line = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", line);
+
 									} catch (Exception ioe) {
 										System.out.println(ioe.getMessage());
 										line = ".bye";
@@ -237,7 +238,7 @@ public class ChatServer {
 						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
-							if ( (C) && (I) &&!done ) {
+							if (C && I && !done) {
 								//apply CI
                 try {
                   line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
@@ -256,7 +257,20 @@ public class ChatServer {
                 }
 
 							} else if (I && !done) {
-								//apply I
+							//apply I
+								if (A) { //apply I with MAC
+									try {
+										byte[] mac = integrityMAC.signMessage(line);
+										//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
+									} catch (RuntimeException e) {
+										System.out.println(e.getMessage());
+										line = ".bye";
+									}
+								} else { //apply I with hash
+									byte[] digest = integrity.signMessage(line);
+									//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
+		
+								}
 							}
 							
 							streamOut.writeUTF(line);
