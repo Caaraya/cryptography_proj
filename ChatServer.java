@@ -135,6 +135,10 @@ public class ChatServer {
 					}
 				} 
 				
+				// needed key and initialization vector
+				Key aesKey = null;
+				byte[] iv = null;
+
 				//Initialize Confidentiality
 				if (C && !done) {
 					try {
