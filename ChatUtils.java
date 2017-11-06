@@ -54,41 +54,48 @@ public class ChatUtils{
 
     public static String encryptAES(byte[] iv, Key key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String(str);
+        byte[] reCipherBytes = msg.getBytes();
+        int len = 16 * ((reCipherBytes.length + 15) / 16);
+        byte[] finalmsg = new byte[len];
+        System.arraycopy(reCipherBytes, 0, finalmsg, 0, reCipherBytes.length);
+        str = aeCipher.doFinal(finalmsg);
+        return new String(str, "Latin1");
     }
 
     public static String encryptAES(byte[] iv, SecretKey key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
-        aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String(str);
+        byte[] reCipherBytes = msg.getBytes();
+        int len = 16 * ((reCipherBytes.length + 15) / 16);
+        byte[] finalmsg = new byte[len];
+        System.arraycopy(reCipherBytes, 0, finalmsg, 0, reCipherBytes.length);
+        str = aeCipher.doFinal(finalmsg);
+        return  new String(str, "Latin1");
     }
 
     public static String decryptAES(byte[] iv, Key key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String (str);
+        str = aeCipher.doFinal(msg.getBytes("Latin1"));
+        return new String(str);
     }
     public static String decryptAES(byte[] iv, SecretKey key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String (str);
+        str = aeCipher.doFinal(msg.getBytes("Latin1"));
+        return new String(str);
     }
     
     public static String encryptPublicRSA(String path, String msg) throws Exception
@@ -121,11 +128,12 @@ public class ChatUtils{
         return generator.generateKey();
     }
 
-    public static byte [] generateIV() {
+    public static byte [] generateIV() throws UnsupportedEncodingException
+    {
         SecureRandom rand = new SecureRandom();
         byte [] iv = new byte [16];
         rand.nextBytes(iv);
-        return iv;
+        return new String(iv, "Latin1").getBytes("Latin1");
     }
     public static SecretKey getKey(String key)
     {
