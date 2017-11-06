@@ -2,6 +2,8 @@ package cryptography_proj;
 import java.net.*;
 import java.io.*;
 import cryptography_proj.ChatUtils;
+import java.security.*;
+import javax.crypto.*;
 
 public class ChatServer {  
 	private Socket				socket		= null;
@@ -108,10 +110,26 @@ public class ChatServer {
 				if (sSel[1] == 1) {
 					
 				}
-				
+
+				// needed key and initialization vector
+				SecretKey aesKey = null;
+				byte[] iv = null;
+
 				//Initialize Confidentiality
 				if (sSel[0] == 1) {
-					
+					try {
+						String encryptedkey = streamIn.readUTF();
+						String encryptediv = streamIn.readUTF();
+						String key = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptedkey);
+						aesKey = util.getKey(key);
+						iv = util.decryptPrivateRSAALT("cryptography_proj/Server/serverprivate.key", encryptediv).getBytes();
+						streamOut.writeUTF("Got aes key and initialization vector");
+						streamOut.flush();
+					} catch (Exception ioe) {
+						System.out.println(ioe.getMessage());
+						streamOut.writeUTF("Error initializing closing client");
+						streamOut.flush();
+					}
 				}
 				
 				//Chat loop
@@ -121,11 +139,23 @@ public class ChatServer {
 						//Receive data
 						if (streamIn.available() > 0) {
 							line = streamIn.readUTF();
-							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
+							if ( (sSel[0] == 1) && (sSel[1] == 1) && !done) {
 								//decrypt CI
-							} else if (sSel[0] == 1) {
+								try {
+									line = util.decryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
+							} else if (sSel[0] == 1 && !done) {
 								//decrypt C
-							} else if (sSel[1] == 1) {
+								try {
+									line = util.decryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
+							} else if (sSel[1] == 1 && !done) {
 								//decrypt I
 							}
 							System.out.println(line);
@@ -136,11 +166,24 @@ public class ChatServer {
 						if (console.ready()) {
 							line = console.readLine();
 							done = line.equals(".bye");
-							if ( (sSel[0] == 1) && (sSel[1] == 1) ) {
+							if ( (sSel[0] == 1) && (sSel[1] == 1)  && !done) {
 								//apply CI
-							} else if (sSel[0] == 1) {
+								try {
+									line = util.encryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
+								
+							} else if (sSel[0] == 1 && !done) {
 								//apply C
-							} else if (sSel[1] == 1) {
+								try {
+									line = util.encryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
+							} else if (sSel[1] == 1 && !done) {
 								//apply I
 							}
 							

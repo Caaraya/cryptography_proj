@@ -2,6 +2,7 @@ package cryptography_proj;
 import java.net.*;
 import java.io.*;
 import cryptography_proj.ChatUtils;
+import java.security.*;
 
 public class ChatClient { 
 	private Socket 				socket	 = null;
@@ -67,9 +68,28 @@ public class ChatClient {
 			//MAC key
 		}
 		
+		// needed key and initialization vector
+		Key aesKey = null;
+		byte[] iv = null;
+
 		//Initialize Confidentiality
 		if (sec[0] == 1) {
-			
+			try{
+				aesKey = util.makeAESKey();
+				iv = util.generateIV();
+				String encrypted = util.encryptPublicRSAALT("cryptography_proj/Client/serverpublic.key", new String(aesKey.getEncoded(), "Latin1"));
+				streamOut.writeUTF(encrypted);
+				streamOut.flush();
+				encrypted = util.encryptPublicRSAALT("cryptography_proj/Client/serverpublic.key", new String(iv, "Latin1"));
+				streamOut.writeUTF(encrypted);
+				streamOut.flush();
+				line = streamIn.readUTF();
+				System.out.println(line);
+				if (line.contains("closing"))
+					return;
+			} catch ( Exception ioe){
+				System.out.println(ioe.getMessage());
+			}
 		}
 		
 		//Chat loop
@@ -80,8 +100,20 @@ public class ChatClient {
 					line = console.readLine();
 					if ( (sec[0] == 1) && (sec[1] == 1) ) {
 						//apply CI
+						try {
+							line = util.encryptAES(iv, aesKey, line);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
 					} else if (sec[0] == 1) {
 						//apply C
+						try {
+							line = util.encryptAES(iv, aesKey, line);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
 					} else if (sec[1] == 1) {
 						//apply I
 					}		
@@ -93,8 +125,20 @@ public class ChatClient {
 					line = streamIn.readUTF();
 					if ( (sec[0] == 1) && (sec[1] == 1) ) {
 						//decrypt for CI
+						try {
+							line = util.decryptAES(iv, aesKey, line);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
 					} else if (sec[0] == 1) {
 						//decrypt for C
+						try {
+							line = util.decryptAES(iv, aesKey, line);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
 					} else if (sec[1] == 1) {
 						//decrypt for I
 					}	
