@@ -47,7 +47,7 @@ public class ChatClient {
 		final boolean I = sec[1];
 		final boolean A = sec[2];
 		
-		//Authentication
+		//Initialize Authentication
 		if (A) {
 			System.out.println("Enter the password:");
 			try {
@@ -89,12 +89,10 @@ public class ChatClient {
 				// TODO: Do you want message to user??
 			}
 		} 
-		
-		// needed key and initialization vector
-		Key aesKey = null;
-		byte[] iv = null;
 
 		//Initialize Confidentiality
+		Key aesKey = null;
+		byte[] iv = null;
 		if (C) {
 			try{
 				// make confidentiality work at least
@@ -134,6 +132,7 @@ public class ChatClient {
 							  line = ".bye";
             				  }
 							//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
+
 						} else { //apply CI
 							byte[] digest = integrity.signMessage(line);
              			 try {
@@ -141,7 +140,7 @@ public class ChatClient {
 						 	 } catch (Exception ioe) {
 							  System.out.println(ioe.getMessage());
 							  line = ".bye";
-              				}
+               }
 							//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
 						}
 					} else if (C) {
@@ -152,10 +151,20 @@ public class ChatClient {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-					} else if (I) {
-						//apply I
-            byte[] digest = integrity.signMessage(line);
-            //TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
+					} else if (I) { //apply I only
+						if (A) { //apply I with MAC
+							try {
+								byte[] mac = integrityMAC.signMessage(line);
+								//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
+							} catch (RuntimeException e) {
+								System.out.println(e.getMessage());
+								line = ".bye";
+							}
+						} else { //apply I with digest
+							byte[] digest = integrity.signMessage(line);
+							//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
+
+						}
 					}		
 					streamOut.writeUTF(line);
 					streamOut.flush();
@@ -170,7 +179,7 @@ public class ChatClient {
 						  	} catch (Exception ioe) {
 							  System.out.println(ioe.getMessage());
 							  line = ".bye";
-					  		}
+					  	}
 
 							//TODO: parse input to get message and dataTag
 							String message = "TODO"; // TODO: will be initialized to the message component
@@ -200,7 +209,7 @@ public class ChatClient {
 
 					} else if (C) {
 						//decrypt for C
-            			try {
+            try {
 							line = util.decryptAES(iv, aesKey, line);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
