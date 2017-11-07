@@ -158,6 +158,7 @@ public class ChatServer {
 				
 				//Chat loop
 				String line = "";
+				boolean len = true; //Message length boolean: true if length okay
 				while (!done) {	
 					try {
 						//Receive data
@@ -181,12 +182,12 @@ public class ChatServer {
 										//      to handle this? Alert the user? Close the connection?
 									}
 								} else { //decrypt for CI
-									  try {
+									try {
 										line = util.decryptAES(iv, aesKey, line);
-										} catch (Exception ioe) {
-											System.out.println(ioe.getMessage());
-											line = ".bye";
-										}
+									} catch (Exception ioe) {
+										System.out.println(ioe.getMessage());
+										line = ".bye";
+									}
 									String message = "TODO"; // TODO: will be initialized to the message component
 									byte[] digest = {0}; // TODO: will be intialized to the hash component
 									try {
@@ -234,29 +235,34 @@ public class ChatServer {
 						//Send data
 						if (console.ready()) {
 							line = console.readLine();
+							if (line.length() > 100) {
+								System.out.println("Message cannot exceed 100 characters");
+								len = false;
+							} else {
+								len = true;
+							}
 							done = line.equals(".bye");
-							if (C && I && !done) {
+							
+							if (C && I && !done && len) {
 								//apply CI
+								try {
+									line = util.encryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
 
-                try {
-					line = util.encryptAES(iv, aesKey, line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
-
-							} else if (C && !done) {
+							} else if (C && !done && len) {
 								//apply C
-                 try {
-					line = util.encryptAES(iv, aesKey, line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
-
-
-							} else if (I && !done) {
-							//apply I
+								try {
+									line = util.encryptAES(iv, aesKey, line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
+								
+							} else if (I && !done && len) {
+								//apply I
 								if (A) { //apply I with MAC
 									try {
 										byte[] mac = integrityMAC.signMessage(line);
@@ -272,8 +278,10 @@ public class ChatServer {
 								}
 							}
 							
-							streamOut.writeUTF(line);
-							streamOut.flush();
+							if (len) {
+								streamOut.writeUTF(line);
+								streamOut.flush();
+							}
 						}
 					} catch(IOException ioe) {
 						done = true;
