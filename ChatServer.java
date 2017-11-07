@@ -163,6 +163,7 @@ public class ChatServer {
 					try {
 						//Receive data
 						if (streamIn.available() > 0) {
+							System.out.print("Client: ");
 							line = streamIn.readUTF();
 							if (C && I) {
 								if (A) { //decrypt for CIA
@@ -234,6 +235,7 @@ public class ChatServer {
 					
 						//Send data
 						if (console.ready()) {
+							System.out.print("Server: ");
 							line = console.readLine();
 							if (line.length() > 100) {
 								System.out.println("Message cannot exceed 100 characters");
