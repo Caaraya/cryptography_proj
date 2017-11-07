@@ -53,41 +53,50 @@ class DigestGenPass
 
     public static String encryptAES(byte[] iv, Key key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String(str);
+        byte[] reCipherBytes = msg.getBytes();
+        int len = 16 * ((reCipherBytes.length + 15) / 16);
+        byte[] finalmsg = new byte[len];
+        System.arraycopy(reCipherBytes, 0, finalmsg, 0, reCipherBytes.length);
+        System.out.println(new String(finalmsg));
+        str = aeCipher.doFinal(finalmsg);
+        return new String(str, "Latin1");
     }
 
     public static String encryptAES(byte[] iv, SecretKey key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
-        aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String(str);
+        byte[] reCipherBytes = msg.getBytes();
+        int len = 16 * ((reCipherBytes.length + 15) / 16);
+        byte[] finalmsg = new byte[len];
+        System.arraycopy(reCipherBytes, 0, finalmsg, 0, reCipherBytes.length);
+        System.out.println(new String(finalmsg));
+        str = aeCipher.doFinal(finalmsg);
+        return  new String(str, "Latin1");
     }
 
     public static String decryptAES(byte[] iv, Key key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String (str);
+        str = aeCipher.doFinal(msg.getBytes("Latin1"));
+        return new String(str);
     }
     public static String decryptAES(byte[] iv, SecretKey key, String msg) throws Exception
     {
-        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/PKCS5Padding" );
+        Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-        str = aeCipher.doFinal(msg.getBytes());
-        return new String (str);
+        str = aeCipher.doFinal(msg.getBytes("Latin1"));
+        return new String(str);
     }
     
     public static String encryptPublicRSA(String path, String msg) throws Exception
@@ -143,19 +152,18 @@ class DigestGenPass
         return generator.generateKey();
     }
 
-    public static byte [] generateIV() {
+    public static byte [] generateIV() throws UnsupportedEncodingException
+        {
         SecureRandom rand = new SecureRandom();
         byte [] iv = new byte [16];
         rand.nextBytes(iv);
-        return iv;
+        return new String(iv, "Latin1").getBytes("Latin1");
     }
     public static SecretKey getKey(String key)
     {
         SecretKey aeskey = null;
         try{
             byte[] data = key.getBytes("Latin1");
-            System.out.println(data.length);
-            System.out.println(new String(data, "Latin1"));
             aeskey = new SecretKeySpec(data, 0, data.length, "AES");
         }
         catch (Exception ex){
@@ -170,29 +178,44 @@ class DigestGenPass
     {
         try{
             String result = encryptPublicRSAALT("Client/serverpublic.key", "ping client for encryption");
-            System.out.println(result);
             result = decryptPrivateRSAALT("Server/serverprivate.key", result);
             System.out.println(result);
-            Key aeskey = makeAESKey();
-            System.out.println(aeskey.getEncoded().length);
-            System.out.println(new String(aeskey.getEncoded(), "Latin1"));
-            String encrypted = encryptPublicRSAALT("Client/serverpublic.key", new String(aeskey.getEncoded(), "Latin1"));
-            String decrypted = decryptPrivateRSAALT("Server/serverprivate.key", encrypted);
+
+            Key aeskey;
+            String encrypted;
+            String decrypted;
+            try{
+                
+                aeskey = makeAESKey();
+                System.out.println(new String(aeskey.getEncoded(), "Latin1").length());
+                encrypted = encryptPublicRSAALT("Client/serverpublic.key", new String(aeskey.getEncoded(), "Latin1"));
+                System.out.println(encrypted.length());
+                decrypted = decryptPrivateRSAALT("Server/serverprivate.key", encrypted);
+                System.out.println(decrypted.length());
+            }
+            catch(Exception ie){
+                //try again
+                aeskey = makeAESKey();
+                encrypted = encryptPublicRSAALT("Client/serverpublic.key", new String(aeskey.getEncoded(), "Latin1"));
+                System.out.println(encrypted.length());
+                decrypted = decryptPrivateRSAALT("Server/serverprivate.key", encrypted);
+            }
+            
             System.out.println(decrypted);
             Key aesKey = getKey(decrypted);
+            String str =  "symmetric encryption";
+            System.out.println(str.length());
             byte[] iv = generateIV();
+            result = encryptAES(iv, aeskey, str);
             System.out.println(new String(iv, "Latin1"));
             encrypted = encryptPublicRSAALT("Client/serverpublic.key", new String(iv, "Latin1"));
             decrypted = decryptPrivateRSAALT("Server/serverprivate.key", encrypted);
-            System.out.println(decrypted);
+            System.out.println(Arrays.equals(iv,decrypted.getBytes("Latin1")) );
             System.out.println(iv.length);
-            System.out.println(decrypted.getBytes().length);
-
-            result = encryptAES(iv, aeskey, "symmetric encryption");
             System.out.println(result.getBytes("Latin1").length);
-            result = decryptAES(decrypted.getBytes(), aesKey, result);
-            System.out.println(new String(aeskey.getEncoded(), "Latin1"));
-            System.out.println(new String(aesKey.getEncoded(), "Latin1"));
+            result = decryptAES(decrypted.getBytes("Latin1"), aesKey, result);
+            System.out.println(Arrays.equals(aeskey.getEncoded(),aesKey.getEncoded()) );
+            System.out.println(Arrays.equals(result.getBytes("Latin1"),str.getBytes("Latin1")) );
             System.out.println(result);
         }
         catch(Exception ioe){
