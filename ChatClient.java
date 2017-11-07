@@ -11,8 +11,8 @@ public class ChatClient {
 	private DataOutputStream	streamOut= null;
 	private Console				c		 = System.console();
 	private ChatUtils 			util     = new ChatUtils();
-	private Integrity integrity;
-	private IntegrityMAC integrityMAC;
+	private Integrity			integrity;
+	private IntegrityMAC		integrityMAC;
 
 	public ChatClient(String serverName, int serverPort, String cia) {
 		System.out.println("Establishing connection. Please wait ...");
@@ -116,13 +116,22 @@ public class ChatClient {
 			}
 		}
 		
+		boolean len = true; //Message length boolean: true if length okay
+		
 		//Chat loop
 		while (!line.equals(".bye")) {
 			try {  
 				//Data to send
 				if (console.ready()) { 
 					line = console.readLine();
-					if (C && I) {
+					if (line.length() > 100) {
+						System.out.println("Message cannot exceed 100 characters");
+						len = false;
+					} else {
+						len = true;
+					}
+					
+					if (C && I && len) {
 						if (A) { //apply CIA
 							byte[] mac = integrityMAC.signMessage(line);
 							try {
@@ -135,15 +144,15 @@ public class ChatClient {
 
 						} else { //apply CI
 							byte[] digest = integrity.signMessage(line);
-             			 try {
-							line = util.encryptAES(iv, aesKey, line);
-						 	 } catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-               }
+							try {
+								line = util.encryptAES(iv, aesKey, line);
+							} catch (Exception ioe) {
+								System.out.println(ioe.getMessage());
+								line = ".bye";
+							}
 							//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
 						}
-					} else if (C) {
+					} else if (C && len) {
 						//apply C only
 						try {
 							line = util.encryptAES(iv, aesKey, line);
@@ -151,7 +160,7 @@ public class ChatClient {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-					} else if (I) { //apply I only
+					} else if (I && len) { //apply I only
 						if (A) { //apply I with MAC
 							try {
 								byte[] mac = integrityMAC.signMessage(line);
@@ -166,8 +175,12 @@ public class ChatClient {
 
 						}
 					}		
-					streamOut.writeUTF(line);
-					streamOut.flush();
+					
+					if (len) {
+						streamOut.writeUTF(line);
+						streamOut.flush();
+					}
+					
 				}
 				//Data to receive
 				if (streamIn.available() > 0) {
@@ -209,7 +222,7 @@ public class ChatClient {
 
 					} else if (C) {
 						//decrypt for C
-            try {
+						try {
 							line = util.decryptAES(iv, aesKey, line);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
