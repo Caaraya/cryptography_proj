@@ -158,6 +158,7 @@ public class ChatServer {
 				
 				//Chat loop
 				String line = "";
+				String hash = "";
 				boolean len = true; //Message length boolean: true if length okay
 				while (!done) {	
 					try {
@@ -248,7 +249,15 @@ public class ChatServer {
 							if (C && I && !done && len) {
 								//apply CI
 								try {
-									line = util.encryptAES(iv, aesKey, line);
+									byte[] hash_byte;
+									if (A) { // Use MAC
+										hash_byte = integrityMAC.signMessage(line); // Get data Tag of message
+									} else { // Use hash
+										hash_byte = integrity.signMessage(line); // Get hash of message
+									}
+									//TODO: *** make hash use its own symmetric key!!
+									line = util.encryptAES(iv, aesKey, line); // Encrypt message
+									hash = util.encryptAES(iv, aesKey, hash_byte.toString()); // Encrypt hash
 								} catch (Exception ioe) {
 									System.out.println(ioe.getMessage());
 									line = ".bye";
@@ -265,22 +274,26 @@ public class ChatServer {
 								
 							} else if (I && !done && len) {
 								//apply I
-								if (A) { //apply I with MAC
-									try {
-										byte[] mac = integrityMAC.signMessage(line);
-										//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
-									} catch (RuntimeException e) {
-										System.out.println(e.getMessage());
-										line = ".bye";
+								byte[] hash_byte;
+								try{
+									if (A) { // Apply integrity with MAC
+										hash_byte = integrityMAC.signMessage(line); // Get data Tag of message
+										hash = hash_byte.toString();
+									} else { // Apply integrity with hash
+										hash_byte = integrity.signMessage(line); // Get hash of message
+										hash = hash_byte.toString();
 									}
-								} else { //apply I with hash
-									byte[] digest = integrity.signMessage(line);
-									//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
-		
+								} catch (RuntimeException e) {
+									System.out.println(e.getMessage());
+									line = ".bye";
 								}
 							}
 							
 							if (len) {
+								if (I) { // Send hash/MAC first
+									streamOut.writeUTF(hash);
+									streamOut.flush();
+								}
 								streamOut.writeUTF(line);
 								streamOut.flush();
 							}
