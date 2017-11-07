@@ -9,14 +9,12 @@ public class ChatServer {
 	private Socket				socket		= null;
 	private ServerSocket		server		= null;
 	private DataInputStream		streamIn	= null;
-
 	private BufferedReader		console		= new BufferedReader(new InputStreamReader(System.in));
 	private DataOutputStream	streamOut	= null;
 	private Console 			c 			= System.console();
 	private ChatUtils 			util        = new ChatUtils();
-
-	private Integrity integrity;
-	private IntegrityMAC integrityMAC;
+	private Integrity			integrity;
+	private IntegrityMAC		integrityMAC;
 
 	public ChatServer(int port, String sCia) {
 		System.out.println("Beginning server");
@@ -240,21 +238,21 @@ public class ChatServer {
 							done = line.equals(".bye");
 							if (C && I && !done) {
 								//apply CI
-                try {
-                  line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
+								try {
+									line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
 
 							} else if (C && !done) {
 								//apply C
-                 try {
-                  line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
-                } catch (Exception ioe) {
-                  System.out.println(ioe.getMessage());
-                  line = ".bye";
-                }
+								try {
+									line = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", line);
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
+									line = ".bye";
+								}
 
 							} else if (I && !done) {
 							//apply I

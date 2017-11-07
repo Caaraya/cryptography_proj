@@ -11,8 +11,8 @@ public class ChatClient {
 	private DataOutputStream	streamOut= null;
 	private Console				c		 = System.console();
 	private ChatUtils 			util     = new ChatUtils();
-	private Integrity integrity;
-	private IntegrityMAC integrityMAC;
+	private Integrity			integrity;
+	private IntegrityMAC		integrityMAC;
 
 	public ChatClient(String serverName, int serverPort, String cia) {
 		System.out.println("Establishing connection. Please wait ...");
