@@ -183,42 +183,33 @@ public class ChatClient {
 					}
 					
 				}
+
+
 				//Data to receive
 				if (streamIn.available() > 0) {
 					System.out.print("Server: ");
-					line = streamIn.readUTF();
+					String hash = streamIn.readUTF();	// Read in hash/MAC first
+					line = streamIn.readUTF();			// Then read in string
 					if (C && I) {
-						if (A) { //decrypt for CIA
-              				try {
-								line = util.decryptAES(iv, aesKey, line);
+						if (A) { // Decrypt for CIA
+							// TODO: *** Make hash use its OWN symmetric key ***
+              				try { // Decrypt message
+								line = util.decryptAES(iv, aesKey, line); // Decrypt message
+								hash = util.decryptAES(iv, aesKey, hash); // Decrypt MAC
+								//integrityMAC.checkIntegrity(line, hash.getBytes()); // Check integrity of message with MAC
 						  	} catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-					  	}
-
-							//TODO: parse input to get message and dataTag
-							String message = "TODO"; // TODO: will be initialized to the message component
-							byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
-							try {
-								 integrityMAC.checkIntegrity(message, dataTag);
-							} catch (InvalidIntegrityException e) {
-								//TODO: Integrity and/or authentication was invalid! How do we want
-								//      to handle this? Alert the user? Close the connection?
+							 	System.out.println(ioe.getMessage());
+							 	line = ".bye";
 							}
-						} else { //decrypt for CI
+						} else { // Decrypt for CI
+							// TODO: *** Make hash use its OWN symmetric key ***
               				try {
-								line = util.decryptAES(iv, aesKey, line);
-						  } catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-						  }
-							String message = "TODO"; // TODO: will be initialized to the message component
-							byte[] digest = {0}; // TODO: will be intialized to the hash component
-							try {
-								 integrity.checkIntegrity(message, digest);
-							} catch (InvalidIntegrityException e) {
-								//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
-								//      Close the connection?
+								line = util.decryptAES(iv, aesKey, line); // Decrypt message
+								hash = util.decryptAES(iv, aesKey, hash); // Decrypt hash
+								//integrity.checkIntegrity(line, hash.getBytes());
+						  	} catch (Exception ioe) { // Message integrity was invalid OR issue with decrypting
+								System.out.println(ioe.getMessage());
+								line = ".bye";
 							}
 						}
 
@@ -232,24 +223,25 @@ public class ChatClient {
 						}
 
 					} else if (I) { //decrypt for I
-						if (A) { //decrypt for IA
-							//TODO: parse input to get message and dataTag
-							String message = "TODO"; // TODO: will be initialized to the message component
-							byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
-							try {
-								 integrityMAC.checkIntegrity(message, dataTag);
-							} catch (InvalidIntegrityException e) {
-								//TODO: Integrity and/or authentication was invalid! How do we want
-								//      to handle this? Alert the user? Close the connection?
+						if (A) { // Decrypt for CIA
+							// TODO: *** Make hash use its OWN symmetric key ***
+              				try { // Decrypt message
+								line = util.decryptAES(iv, aesKey, line); // Decrypt message
+								hash = util.decryptAES(iv, aesKey, hash); // Decrypt MAC
+								integrityMAC.checkIntegrity(line, hash.getBytes()); // Check integrity of message with MAC
+						  	} catch (Exception ioe) {
+							 	System.out.println(ioe.getMessage());
+							 	line = ".bye";
 							}
-						} else { //decrypt for I
-							String message = "TODO"; // TODO: will be initialized to the message component
-							byte[] digest = {0}; // TODO: will be intialized to the hash component
-							try {
-								integrity.checkIntegrity(message, digest);
-							} catch (InvalidIntegrityException e) {
-								//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
-								//      Close the connection?
+						} else { // Decrypt for CI
+							// TODO: *** Make hash use its OWN symmetric key ***
+              				try {
+								line = util.decryptAES(iv, aesKey, line); // Decrypt message
+								hash = util.decryptAES(iv, aesKey, hash); // Decrypt hash
+								integrity.checkIntegrity(line, hash.getBytes());
+						  	} catch (Exception ioe) { // Message integrity was invalid OR issue with decrypting
+								System.out.println(ioe.getMessage());
+								line = ".bye";
 							}
 						}
 					}	
