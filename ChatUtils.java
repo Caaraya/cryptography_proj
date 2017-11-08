@@ -58,6 +58,7 @@ public class ChatUtils{
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+        msg = Integer.toString(msg.length()) + " " + msg;
         byte[] reCipherBytes = msg.getBytes();
         int len = 16 * ((reCipherBytes.length + 15) / 16);
         byte[] finalmsg = new byte[len];
@@ -71,6 +72,7 @@ public class ChatUtils{
         Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
+        msg = Integer.toString(msg.length()) + " " + msg;
         byte[] reCipherBytes = msg.getBytes();
         int len = 16 * ((reCipherBytes.length + 15) / 16);
         byte[] finalmsg = new byte[len];
@@ -86,7 +88,10 @@ public class ChatUtils{
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
         str = aeCipher.doFinal(msg.getBytes("Latin1"));
-        return new String(str);
+        msg = new String(str);
+        int intlen = msg.split(" ")[0].length();
+        int msglen = Integer.parseInt(msg.split(" ")[0]);
+        return msg.substring(intlen + 1, msglen + intlen + 1);
     }
     public static String decryptAES(byte[] iv, SecretKey key, String msg) throws Exception
     {
@@ -95,7 +100,10 @@ public class ChatUtils{
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
         str = aeCipher.doFinal(msg.getBytes("Latin1"));
-        return new String(str);
+        msg = new String(str);
+        int intlen = msg.split(" ")[0].length();
+        int msglen = Integer.parseInt(msg.split(" ")[0]);
+        return msg.substring(intlen + 1, msglen + intlen + 1);
     }
     
     public static String encryptPublicRSA(String path, String msg) throws Exception
