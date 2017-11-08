@@ -117,13 +117,15 @@ public class ChatClient {
 		}
 		
 		boolean len = true; //Message length boolean: true if length okay
-		
+		boolean bye = false;
 		//Chat loop
-		while (!line.equals(".bye")) {
+		while (!line.equals(".bye") && !bye) {
 			try {  
 				//Data to send
 				if (console.ready()) { 
 					line = console.readLine();
+					bye = line.equals(".bye");
+
 					if (line.length() > 100) {
 						System.out.println("Message cannot exceed 100 characters");
 						len = false;
