@@ -4,6 +4,7 @@ import java.io.*;
 import cryptography_proj.ChatUtils;
 import java.security.*;
 import javax.crypto.*;
+import java.util.Base64;
 
 public class ChatServer {  
 	private Socket				socket		= null;
@@ -109,18 +110,27 @@ public class ChatServer {
 					}
 				}
 				
+				/*
 				//Initialize Integrity and *extra* Authentication with MACs
+				Key aesKey_MAC = null;
+				byte[] iv_MAC = null;
 				if(I && A && !done) {
 					try {
-						// TODO: remove this inner try catch block when done with placeholder
-						try {
-							Key key = util.makeAESKey(); //TODO: This is just a placeholder till I figure out how to receive they key
-							integrityMAC = new IntegrityMAC(key);
-						} catch (NoSuchAlgorithmException e) {
-							// TODO: remove
-						}
-					} catch (RuntimeException e) {
-						// TODO: Do you want message to user??
+						String encryptedKeyMAC = streamIn.readUTF();
+						String encryptedIVKey = streamIn.readUTF();
+						String aesKey_MAC_String = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", encryptedKeyMAC);
+						iv_MAC = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", encryptedIVKey).getBytes("Latin1");
+						integrityMAC = new IntegrityMAC(aesKey_MAC_String);
+						aesKey_MAC = integrityMAC.getKey();
+						String message ="Initialized symmetric keys on server for MAC";
+						String encryptedMessage = util.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", message);
+						streamOut.writeUTF(encryptedMessage);
+						System.out.println(message);
+						streamOut.flush();
+					} catch (Exception ioe) {
+						System.out.println(ioe.getMessage());
+						streamOut.writeUTF("Error initializing closing client");
+						streamOut.flush();
 					}
 				}
 
@@ -128,11 +138,26 @@ public class ChatServer {
 				if (I && !A && !done) {
 					try {
 						integrity = new Integrity();
-					} catch (RuntimeException e) {
+					} catch (RuntimeException ioe) {
 						// TODO: Do you want message to user??
+						System.out.println(ioe.getMessage());
+						System.out.println(ioe.getMessage());
+						streamOut.writeUTF("Error initializing closing client");
+						streamOut.flush();
 					}
 				} 
-				
+				*/
+
+				//Initialize Integrity only
+				if (I && !done) {
+					try {
+						integrity = new Integrity();
+					} catch (RuntimeException ioe) {
+						// TODO: Do you want message to user??
+						streamOut.writeUTF("Error initializing closing client");
+						streamOut.flush();
+					}
+				}
 				// needed key and initialization vector
 				Key aesKey = null;
 				byte[] iv = null;
@@ -163,40 +188,49 @@ public class ChatServer {
 					try {
 						//Receive data
 						if (streamIn.available() > 0) {
-							line = streamIn.readUTF();
-							if (C && I) {
-								if (A) { //decrypt for CIA
+							String hash = "";
+
+							if (I) {
+								hash = streamIn.readUTF(); // Read in hash/MAC first
+								/*(if (C && A) {
 									try {
-										line = util.decryptAES(iv, aesKey, line);
+										hash = util.decryptAES(iv_MAC, aesKey_MAC, hash);
 									} catch (Exception ioe) {
 										System.out.println(ioe.getMessage());
 										line = ".bye";
 									}
-									//TODO: parse input to get message and dataTag
-									String message = "TODO"; // TODO: will be initialized to the message component
-									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
+								} else if (C && !A) {
+								*/	try {
+										hash = util.decryptAES(iv, aesKey, hash);
+									} catch (Exception ioe) {
+										System.out.println(ioe.getMessage());
+										line = ".bye";
+									}
+								//}
+							}
+
+							System.out.print("Client: ");
+							line = streamIn.readUTF();
+
+							if (C && I) {
+								/*if (A) { //decrypt for CIA
 									try {
-										integrityMAC.checkIntegrity(message, dataTag);
-									} catch (InvalidIntegrityException e) {
-										//TODO: Integrity and/or authentication was invalid! How do we want
-										//      to handle this? Alert the user? Close the connection?
+										line = util.decryptAES(iv, aesKey, line);
+										integrityMAC.checkIntegrity(line, hash);
+									} catch (Exception ioe) {
+										System.out.println(ioe.getMessage());
+										line = ".bye";
 									}
 								} else { //decrypt for CI
-									try {
+								*/	try {
 										line = util.decryptAES(iv, aesKey, line);
+										integrity.checkIntegrity(line, hash);
 									} catch (Exception ioe) {
+										System.out.println("THE EXCEPTION WE WANT TO GET RID OF :(");
 										System.out.println(ioe.getMessage());
 										line = ".bye";
 									}
-									String message = "TODO"; // TODO: will be initialized to the message component
-									byte[] digest = {0}; // TODO: will be intialized to the hash component
-									try {
-										integrity.checkIntegrity(message, digest);
-									} catch (InvalidIntegrityException e) {
-										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
-										//      Close the connection?
-									}
-								}
+								//}
 							} else if (C) {
 								//decrypt C
 								try {
@@ -207,26 +241,25 @@ public class ChatServer {
 								}
                 
 							} else if (I) { //decrypt for I
-								if (A) { //decrypt for IA
-									//TODO: parse input to get message and dataTag
-									String message = "TODO"; // TODO: will be initialized to the message component
-									byte[] dataTag = {0}; // TODO: will be initiliazed to the dataTag component
+								/*if (A) { //decrypt for IA
 									try {
-										integrityMAC.checkIntegrity(message, dataTag);
+										integrityMAC.checkIntegrity(line, hash);
 									} catch (InvalidIntegrityException e) {
+										System.out.println(e.getMessage());
+										line = ".bye";
 										//TODO: Integrity and/or authentication was invalid! How do we want
 										//      to handle this? Alert the user? Close the connection?
 									}
 								} else { //decrypt for I
-									String message = "TODO"; // TODO: will be initialized to the message component
-									byte[] digest = {0}; // TODO: will be intialized to the hash component
-									try {
-										integrity.checkIntegrity(message, digest);
+								*/	try {
+										integrity.checkIntegrity(line, hash);
 									} catch (InvalidIntegrityException e) {
+										System.out.println(e.getMessage());
+										line = ".bye";
 										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
 										//      Close the connection?
 									}
-								}
+								//}
 							}	
 							System.out.println(line);
 							done = line.equals(".bye");
@@ -234,6 +267,8 @@ public class ChatServer {
 					
 						//Send data
 						if (console.ready()) {
+							String hash = "";
+							System.out.print("Server: ");
 							line = console.readLine();
 							if (line.length() > 100) {
 								System.out.println("Message cannot exceed 100 characters");
@@ -246,7 +281,14 @@ public class ChatServer {
 							if (C && I && !done && len) {
 								//apply CI
 								try {
-									line = util.encryptAES(iv, aesKey, line);
+								/*	if (A) { // Use MAC
+										hash = integrityMAC.signMessage(line); // Get data Tag of message
+										hash = util.encryptAES(iv_MAC, aesKey_MAC, hash); // Encrypt hash
+									} else { // Use hash
+								*/		hash = integrity.signMessage(line); // Get hash of message
+										hash = util.encryptAES(iv, aesKey, hash); // Encrypt hash
+								//	}
+									line = util.encryptAES(iv, aesKey, line); // Encrypt message
 								} catch (Exception ioe) {
 									System.out.println(ioe.getMessage());
 									line = ".bye";
@@ -263,22 +305,24 @@ public class ChatServer {
 								
 							} else if (I && !done && len) {
 								//apply I
-								if (A) { //apply I with MAC
-									try {
-										byte[] mac = integrityMAC.signMessage(line);
-										//TODO: send message ALONG WITH byte[] mac (need to figure how we want to send byte[])
-									} catch (RuntimeException e) {
-										System.out.println(e.getMessage());
-										line = ".bye";
-									}
-								} else { //apply I with hash
-									byte[] digest = integrity.signMessage(line);
-									//TODO: send message ALONG WITH byte[] digest (need to figure how we want to send byte[])
-		
+								try{
+									/*if (A) { // Apply integrity with MAC
+										hash = integrityMAC.signMessage(line); // Get data Tag of message
+										System.out.println("--- " + integrityMAC.checkIntegrity(line, hash));
+									} else { // Apply integrity with hash
+									*/	hash = integrity.signMessage(line); // Get hash of message
+								//	}
+								} catch (Exception e) {
+									System.out.println(e.getMessage());
+									line = ".bye";
 								}
 							}
 							
 							if (len) {
+								if (I) { // Send hash/MAC first
+									streamOut.writeUTF(hash);
+									streamOut.flush();
+								}
 								streamOut.writeUTF(line);
 								streamOut.flush();
 							}
