@@ -212,7 +212,8 @@ public class ChatServer {
 								} else { //decrypt for CI
 									try {
 										line = util.decryptAES(iv, aesKey, line);
-										System.out.println("\n\nReceived the line: " + line);
+										System.out.println("\n\nReceived the line: " + line + ".....");
+										System.out.println("The length of line is " + line.length());
 										System.out.println("Testing signMessage() on " + line + " gives: " + integrity.signMessage(line));
 										System.out.println("Testing signMessage() on " + "BABY"+ " gives: " + integrity.signMessage("BABY"));
 										System.out.println("Testing signMessage() on " + "BABY"+ " gives: " + integrity.signMessage("BABY"));
