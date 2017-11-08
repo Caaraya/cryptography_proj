@@ -177,7 +177,6 @@ public class ChatClient {
             				  }
 						} else { *///apply CI
 							hash = integrity.signMessage(line);
-							System.out.println("Hash that we are sending: " + hash);
 							try {
 								//TODO: make has use its own symmetric key
 								line = util.encryptAES(iv, aesKey, line);

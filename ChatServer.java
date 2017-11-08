@@ -154,8 +154,6 @@ public class ChatServer {
 						integrity = new Integrity();
 					} catch (RuntimeException ioe) {
 						// TODO: Do you want message to user??
-						System.out.println(ioe.getMessage());
-						System.out.println(ioe.getMessage());
 						streamOut.writeUTF("Error initializing closing client");
 						streamOut.flush();
 					}
@@ -226,13 +224,6 @@ public class ChatServer {
 								} else { //decrypt for CI
 								*/	try {
 										line = util.decryptAES(iv, aesKey, line);
-										System.out.println("\n\nReceived the line: " + line + ".....");
-										System.out.println("The length of line is " + line.length());
-										System.out.println("Testing signMessage() on " + line + " gives: " + integrity.signMessage(line));
-										System.out.println("Testing signMessage() on " + "BABY"+ " gives: " + integrity.signMessage("BABY"));
-										System.out.println("Testing signMessage() on " + "BABY"+ " gives: " + integrity.signMessage("BABY"));
-										System.out.println("Testing signMessage() on " + "BABY"+ " gives: " + integrity.signMessage("BABY"));
-										System.out.println("Testing signMessage() on " + "BABY"+ " gives: " + integrity.signMessage("BABY"));
 										integrity.checkIntegrity(line, hash);
 									} catch (Exception ioe) {
 										System.out.println("THE EXCEPTION WE WANT TO GET RID OF :(");
@@ -320,7 +311,6 @@ public class ChatServer {
 										System.out.println("--- " + integrityMAC.checkIntegrity(line, hash));
 									} else { // Apply integrity with hash
 									*/	hash = integrity.signMessage(line); // Get hash of message
-										System.out.println("---" + integrity.checkIntegrity(line, hash));
 								//	}
 								} catch (Exception e) {
 									System.out.println(e.getMessage());

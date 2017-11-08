@@ -43,20 +43,10 @@ public class Integrity {
      * @throws InvalidIntegrityException if message integrity is invalid
      */
     public boolean checkIntegrity(String message, String digest) throws InvalidIntegrityException {
-
-        // Digest is already encoded as Base64 string
-        // message is NOT
-        // I need to compare the byte arrays of both
-        
         String message_dataTag = signMessage(message);
-        System.out.println("HASH I RECEIVED: " + digest);
-        System.out.println("HASH I MADE: " + message_dataTag);
-
         byte[] message_dataTag_array = Base64.getEncoder().encode(message_dataTag.getBytes());
         byte[] digestByte = Base64.getEncoder().encode(digest.getBytes());
         boolean integrity = MessageDigest.isEqual(digestByte, message_dataTag_array);
-
-        System.out.println(integrity);
         if (!integrity) {
             throw new InvalidIntegrityException("Message integrity is invalid");
         } else {
