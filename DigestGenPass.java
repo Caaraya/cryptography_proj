@@ -57,11 +57,11 @@ class DigestGenPass
         byte[] str = null;
         if (key == null) return "";
         aeCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-        msg = Integer.toString(msg.length()) + " " + msg;
         byte[] reCipherBytes = msg.getBytes();
         int len = 16 * ((reCipherBytes.length + 15) / 16);
         byte[] finalmsg = new byte[len];
         System.arraycopy(reCipherBytes, 0, finalmsg, 0, reCipherBytes.length);
+        System.out.println(new String(finalmsg));
         str = aeCipher.doFinal(finalmsg);
         return new String(str, "Latin1");
     }
@@ -71,11 +71,11 @@ class DigestGenPass
         Cipher aeCipher = Cipher.getInstance( key.getAlgorithm() + "/CBC/NoPadding" );
         byte[] str = null;
         if (key == null) return "";
-        msg = Integer.toString(msg.length()) + " " + msg;
         byte[] reCipherBytes = msg.getBytes();
         int len = 16 * ((reCipherBytes.length + 15) / 16);
         byte[] finalmsg = new byte[len];
         System.arraycopy(reCipherBytes, 0, finalmsg, 0, reCipherBytes.length);
+        System.out.println(new String(finalmsg));
         str = aeCipher.doFinal(finalmsg);
         return  new String(str, "Latin1");
     }
@@ -87,10 +87,7 @@ class DigestGenPass
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
         str = aeCipher.doFinal(msg.getBytes("Latin1"));
-        msg = new String(str);
-        int intlen = msg.split(" ")[0].length();
-        int msglen = Integer.parseInt(msg.split(" ")[0]);
-        return msg.substring(intlen + 1, msglen + intlen + 1);
+        return new String(str);
     }
     public static String decryptAES(byte[] iv, SecretKey key, String msg) throws Exception
     {
@@ -99,10 +96,7 @@ class DigestGenPass
         if (key == null) return "";
         aeCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
         str = aeCipher.doFinal(msg.getBytes("Latin1"));
-        msg = new String(str);
-        int intlen = msg.split(" ")[0].length();
-        int msglen = Integer.parseInt(msg.split(" ")[0]);
-        return msg.substring(intlen + 1, msglen + intlen + 1);
+        return new String(str);
     }
     
     public static String encryptPublicRSA(String path, String msg) throws Exception
