@@ -110,6 +110,7 @@ public class ChatServer {
 					}
 				}
 				
+				/*
 				//Initialize Integrity and *extra* Authentication with MACs
 				Key aesKey_MAC = null;
 				byte[] iv_MAC = null;
@@ -145,7 +146,20 @@ public class ChatServer {
 						streamOut.flush();
 					}
 				} 
-				
+				*/
+
+				//Initialize Integrity only
+				if (I && !done) {
+					try {
+						integrity = new Integrity();
+					} catch (RuntimeException ioe) {
+						// TODO: Do you want message to user??
+						System.out.println(ioe.getMessage());
+						System.out.println(ioe.getMessage());
+						streamOut.writeUTF("Error initializing closing client");
+						streamOut.flush();
+					}
+				}
 				// needed key and initialization vector
 				Key aesKey = null;
 				byte[] iv = null;
@@ -180,7 +194,7 @@ public class ChatServer {
 
 							if (I) {
 								hash = streamIn.readUTF(); // Read in hash/MAC first
-								if (C && A) {
+								/*(if (C && A) {
 									try {
 										hash = util.decryptAES(iv_MAC, aesKey_MAC, hash);
 									} catch (Exception ioe) {
@@ -188,20 +202,20 @@ public class ChatServer {
 										line = ".bye";
 									}
 								} else if (C && !A) {
-									try {
+								*/	try {
 										hash = util.decryptAES(iv, aesKey, hash);
 									} catch (Exception ioe) {
 										System.out.println(ioe.getMessage());
 										line = ".bye";
 									}
-								}
+								//}
 							}
 
 							System.out.print("Client: ");
 							line = streamIn.readUTF();
 
 							if (C && I) {
-								if (A) { //decrypt for CIA
+								/*if (A) { //decrypt for CIA
 									try {
 										line = util.decryptAES(iv, aesKey, line);
 										integrityMAC.checkIntegrity(line, hash);
@@ -210,7 +224,7 @@ public class ChatServer {
 										line = ".bye";
 									}
 								} else { //decrypt for CI
-									try {
+								*/	try {
 										line = util.decryptAES(iv, aesKey, line);
 										System.out.println("\n\nReceived the line: " + line + ".....");
 										System.out.println("The length of line is " + line.length());
@@ -225,7 +239,7 @@ public class ChatServer {
 										System.out.println(ioe.getMessage());
 										line = ".bye";
 									}
-								}
+								//}
 							} else if (C) {
 								//decrypt C
 								try {
@@ -236,7 +250,7 @@ public class ChatServer {
 								}
                 
 							} else if (I) { //decrypt for I
-								if (A) { //decrypt for IA
+								/*if (A) { //decrypt for IA
 									try {
 										integrityMAC.checkIntegrity(line, hash);
 									} catch (InvalidIntegrityException e) {
@@ -246,7 +260,7 @@ public class ChatServer {
 										//      to handle this? Alert the user? Close the connection?
 									}
 								} else { //decrypt for I
-									try {
+								*/	try {
 										integrity.checkIntegrity(line, hash);
 									} catch (InvalidIntegrityException e) {
 										System.out.println(e.getMessage());
@@ -254,7 +268,7 @@ public class ChatServer {
 										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
 										//      Close the connection?
 									}
-								}
+								//}
 							}	
 							System.out.println(line);
 							done = line.equals(".bye");
@@ -276,13 +290,13 @@ public class ChatServer {
 							if (C && I && !done && len) {
 								//apply CI
 								try {
-									if (A) { // Use MAC
+								/*	if (A) { // Use MAC
 										hash = integrityMAC.signMessage(line); // Get data Tag of message
 										hash = util.encryptAES(iv_MAC, aesKey_MAC, hash); // Encrypt hash
 									} else { // Use hash
-										hash = integrity.signMessage(line); // Get hash of message
+								*/		hash = integrity.signMessage(line); // Get hash of message
 										hash = util.encryptAES(iv, aesKey, hash); // Encrypt hash
-									}
+								//	}
 									line = util.encryptAES(iv, aesKey, line); // Encrypt message
 								} catch (Exception ioe) {
 									System.out.println(ioe.getMessage());
@@ -301,13 +315,13 @@ public class ChatServer {
 							} else if (I && !done && len) {
 								//apply I
 								try{
-									if (A) { // Apply integrity with MAC
+									/*if (A) { // Apply integrity with MAC
 										hash = integrityMAC.signMessage(line); // Get data Tag of message
 										System.out.println("--- " + integrityMAC.checkIntegrity(line, hash));
 									} else { // Apply integrity with hash
-										hash = integrity.signMessage(line); // Get hash of message
+									*/	hash = integrity.signMessage(line); // Get hash of message
 										System.out.println("---" + integrity.checkIntegrity(line, hash));
-									}
+								//	}
 								} catch (Exception e) {
 									System.out.println(e.getMessage());
 									line = ".bye";

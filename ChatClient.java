@@ -71,6 +71,7 @@ public class ChatClient {
 		}
 
 		//Initialize Integrity and *extra* Authentication with MACs
+		/*
 		Key aesKey_MAC = null;
 		byte[] iv_MAC = null;
 		if (I && A) {
@@ -101,6 +102,17 @@ public class ChatClient {
 
 		//Initialize Integrity only
 		if (I && !A) {
+			try {
+				integrity = new Integrity();
+			} catch (RuntimeException e) {
+				System.out.println(e.getMessage());
+				line = ".bye";
+				// TODO: Do you want message to user??
+			}
+		} */
+
+		//Initialize Integrity only
+		if (I) {
 			try {
 				integrity = new Integrity();
 			} catch (RuntimeException e) {
@@ -153,7 +165,7 @@ public class ChatClient {
 						len = true;
 					}
 					if (C && I && len) {
-						if (A) { //apply CIA
+						/*if (A) { //apply CIA
 							hash = integrityMAC.signMessage(line);
 							try {
 								//TODO: make has use its own symmetric key
@@ -163,7 +175,7 @@ public class ChatClient {
 							  System.out.println(ioe.getMessage());
 							  line = ".bye";
             				  }
-						} else { //apply CI
+						} else { *///apply CI
 							hash = integrity.signMessage(line);
 							System.out.println("Hash that we are sending: " + hash);
 							try {
@@ -174,7 +186,7 @@ public class ChatClient {
 								System.out.println("ISSUE WHEN CREATING HASH");
 								System.out.println(ioe.getMessage());
 								line = ".bye";
-							}
+							//}
 						}
 					} else if (C && len) {
 						//apply C only
@@ -185,16 +197,16 @@ public class ChatClient {
 							line = ".bye";
 						}
 					} else if (I && len) { //apply I only
-						if (A) { //apply I with MAC
+						/*if (A) { //apply I with MAC
 							try {
 								hash = integrityMAC.signMessage(line);
 							} catch (RuntimeException e) {
 								System.out.println(e.getMessage());
 								line = ".bye";
 							}
-						} else { //apply I with digest
+						} else {*/ //apply I with digest
 							hash = integrity.signMessage(line);
-						}
+						//}
 					}		
 					
 					if (I) {
@@ -218,7 +230,7 @@ public class ChatClient {
 					}
 					line = streamIn.readUTF();			// Then read in string
 					if (C && I) {
-						if (A) { // Decrypt for CIA
+						/*if (A) { // Decrypt for CIA
 							// TODO: *** Make hash use its OWN symmetric key ***
               				try { // Decrypt message
 								line = util.decryptAES(iv, aesKey, line); // Decrypt message
@@ -228,7 +240,7 @@ public class ChatClient {
 							 	System.out.println(ioe.getMessage());
 							 	line = ".bye";
 							}
-						} else { // Decrypt for CI
+						} else { */// Decrypt for CI
 							// TODO: *** Make hash use its OWN symmetric key ***
               				try {
 								line = util.decryptAES(iv, aesKey, line); // Decrypt message
@@ -238,7 +250,7 @@ public class ChatClient {
 								System.out.println(ioe.getMessage());
 								line = ".bye";
 							}
-						}
+						//}
 
 					} else if (C) {
 						//decrypt for C
@@ -250,7 +262,7 @@ public class ChatClient {
 						}
 
 					} else if (I) {
-						if (A) { // Decrypt for IA
+						/*if (A) { // Decrypt for IA
 							// TODO: *** Make hash use its OWN symmetric key ***
               				try { 
 								integrityMAC.checkIntegrity(line, hash); // Check integrity of message with MAC
@@ -258,7 +270,7 @@ public class ChatClient {
 							 	System.out.println(ioe.getMessage());
 							 	line = ".bye";
 							}
-						} else { // Check I
+						} else {*/ // Check I
 							// TODO: *** Make hash use its OWN symmetric key ***
               				try {
 								integrity.checkIntegrity(line, hash);
@@ -266,7 +278,7 @@ public class ChatClient {
 								System.out.println(ioe.getMessage());
 								line = ".bye";
 							}
-						}
+						//}
 					}	
 					System.out.println(line);
 				}
