@@ -12,8 +12,7 @@ public class ChatClient {
 	private DataOutputStream	streamOut= null;
 	private Console				c		 = System.console();
 	private ChatUtils 			util     = new ChatUtils();
-	private Integrity			integrity;
-	private IntegrityMAC		integrityMAC;
+	private Integrity			integrity= null;
 
 	public ChatClient(String serverName, int serverPort, String cia) {
 		System.out.println("Establishing connection. Please wait ...");
@@ -43,7 +42,6 @@ public class ChatClient {
 		
 		//Generate security choices array
 		boolean[] sec = selector(cia);
-		//
 		final boolean C = sec[0];
 		final boolean I = sec[1];
 		final boolean A = sec[2];
@@ -70,48 +68,8 @@ public class ChatClient {
 			}
 		}
 
-		//Initialize Integrity and *extra* Authentication with MACs
-		/*
-		Key aesKey_MAC = null;
-		byte[] iv_MAC = null;
-		if (I && A) {
-			try{
-				integrityMAC = new IntegrityMAC();
-				aesKey_MAC = integrityMAC.getKey();
-				iv_MAC = util.generateIV();
-				String keyString = integrityMAC.getKeyString();
-				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", keyString);
-				streamOut.writeUTF(encrypted);
-				streamOut.flush();
-				encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(iv_MAC, "Latin1"));
-				streamOut.writeUTF(encrypted);
-				streamOut.flush();
-				line = streamIn.readUTF();
-				if (line.contains("closing"))
-					return;
-				line = util.decryptRSA("cryptography_proj/Client/clientprivate.key", line);
-				if (!line.contains("Initialized"))
-					return;
-				System.out.println(line);
-			} catch ( Exception ioe){
-				System.out.println(ioe.getMessage());
-				System.out.println("Issue when initializing integrity and MAC");
-			}
-		}
 
-
-		//Initialize Integrity only
-		if (I && !A) {
-			try {
-				integrity = new Integrity();
-			} catch (RuntimeException e) {
-				System.out.println(e.getMessage());
-				line = ".bye";
-				// TODO: Do you want message to user??
-			}
-		} */
-
-		//Initialize Integrity only
+		//Initialize Integrity
 		if (I) {
 			try {
 				integrity = new Integrity();
@@ -127,7 +85,6 @@ public class ChatClient {
 		byte[] iv = null;
 		if (C) {
 			try{
-				// make confidentiality work at least
 				aesKey = util.makeAESKey();
 				iv = util.generateIV();
 				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(aesKey.getEncoded(), "Latin1"));
@@ -167,27 +124,13 @@ public class ChatClient {
 						len = true;
 					}
 					if (C && I && len) {
-						/*if (A) { //apply CIA
-							hash = integrityMAC.signMessage(line);
-							try {
-								//TODO: make has use its own symmetric key
-								line = util.encryptAES(iv, aesKey, line);
-								hash = util.encryptAES(iv_MAC, aesKey_MAC, hash);
-						  		} catch (Exception ioe) {
-							  System.out.println(ioe.getMessage());
-							  line = ".bye";
-            				  }
-						} else { *///apply CI
-							hash = integrity.signMessage(line);
-							try {
-								//TODO: make has use its own symmetric key
-								line = util.encryptAES(iv, aesKey, line);
-								hash = util.encryptAES(iv, aesKey, hash);
-							} catch (Exception ioe) {
-								System.out.println("ISSUE WHEN CREATING HASH");
-								System.out.println(ioe.getMessage());
-								line = ".bye";
-							//}
+						//apply CI
+						hash = integrity.signMessage(line);
+						try {
+							line = util.encryptAES(iv, aesKey, line);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";	
 						}
 					} else if (C && len) {
 						//apply C only
@@ -197,21 +140,18 @@ public class ChatClient {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-					} else if (I && len) { //apply I only
-						/*if (A) { //apply I with MAC
-							try {
-								hash = integrityMAC.signMessage(line);
-							} catch (RuntimeException e) {
-								System.out.println(e.getMessage());
-								line = ".bye";
-							}
-						} else {*/ //apply I with digest
-							hash = integrity.signMessage(line);
-						//}
+					} else if (I && len) {
+						hash = integrity.signMessage(line);
 					}		
 					
 					if (I) {
-						streamOut.writeUTF(new String(hash));
+						try {
+							hash = ChatUtils.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
+						streamOut.writeUTF(hash);
 						streamOut.flush();
 					}
  					if (len) {
@@ -225,43 +165,34 @@ public class ChatClient {
 				//Data to receive
 				if (streamIn.available() > 0) {
 					String hash = "";
-					
 					if (I) {
-						hash = streamIn.readUTF();	// Read in hash/MAC first
-						if (hash.equals(".bye")){
+						hash = streamIn.readUTF();	// Read in hash
+						try {
+							hash = ChatUtils.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
+						} catch (Exception ioe) {
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
+							if (hash.equals(".bye")){
 							System.out.println(hash);
 							break;
 						}
 					}
-					line = streamIn.readUTF();			// Then read in string
+					line = streamIn.readUTF();		// Then read in string
 					if (line.equals(".bye")){
 						System.out.println(line);
 						break;
 					}
 
 					if (C && I) {
-						/*if (A) { // Decrypt for CIA
-							// TODO: *** Make hash use its OWN symmetric key ***
-              				try { // Decrypt message
-								line = util.decryptAES(iv, aesKey, line); // Decrypt message
-								hash = util.decryptAES(iv_MAC, aesKey_MAC, hash); // Decrypt MAC
-								integrityMAC.checkIntegrity(line, hash); // Check integrity of message with MAC
-						  	} catch (Exception ioe) {
-							 	System.out.println(ioe.getMessage());
-							 	line = ".bye";
-							}
-						} else { */// Decrypt for CI
-							// TODO: *** Make hash use its OWN symmetric key ***
-              				try {
-								line = util.decryptAES(iv, aesKey, line); // Decrypt message
-								hash = util.decryptAES(iv, aesKey, hash); // Decrypt hash
-								integrity.checkIntegrity(line, hash);
-						  	} catch (Exception ioe) { // Message integrity was invalid OR issue with decrypting
-								System.out.println(ioe.getMessage());
-								line = ".bye";
-							}
-						//}
-
+						//decrypt for CI
+						try {
+							line = util.decryptAES(iv, aesKey, line); // Decrypt message
+							integrity.checkIntegrity(line, hash);
+						} catch (Exception ioe) { // Message integrity was invalid OR issue with decrypting
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
 					} else if (C) {
 						//decrypt for C
 						try {
@@ -272,23 +203,12 @@ public class ChatClient {
 						}
 
 					} else if (I) {
-						/*if (A) { // Decrypt for IA
-							// TODO: *** Make hash use its OWN symmetric key ***
-              				try { 
-								integrityMAC.checkIntegrity(line, hash); // Check integrity of message with MAC
-						  	} catch (Exception ioe) { // Message integrity was invalid or Authenticity invalid
-							 	System.out.println(ioe.getMessage());
-							 	line = ".bye";
-							}
-						} else {*/ // Check I
-							// TODO: *** Make hash use its OWN symmetric key ***
-              				try {
-								integrity.checkIntegrity(line, hash);
-						  	} catch (Exception ioe) { // Message integrity was invalid
-								System.out.println(ioe.getMessage());
-								line = ".bye";
-							}
-						//}
+						try {
+							integrity.checkIntegrity(line, hash);
+						} catch (Exception ioe) { // Message integrity was invalid
+							System.out.println(ioe.getMessage());
+							line = ".bye";
+						}
 					}
 					System.out.print("Server: ");
 					System.out.println(line);
