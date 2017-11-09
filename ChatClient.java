@@ -348,11 +348,12 @@ public class ChatClient {
 			else if (args.length == 2)
 				client = new ChatClient(args[0], Integer.parseInt(args[1]), "null");
 			else
-				System.out.println("Incorrect command line entry: java ChatClient <connection> <port> (<security>)");
+				System.out.println("Incorrect command line entry: java cryptography_proj.ChatClient <connection> <port> <security>");
+				System.out.println("or: java cryptography_proj.ChatClient <connection> <port>");
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-			System.out.println("Incorrect command line entry: java ChatClient <connection> <port> (<security>)");
-
+			System.out.println("Incorrect command line entry: java cryptography_proj.ChatClient <connection> <port> <security>");
+			System.out.println("or: java cryptography_proj.ChatClient <connection> <port>");
 		}
 	}
 }
