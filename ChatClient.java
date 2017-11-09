@@ -333,11 +333,17 @@ public class ChatClient {
 	
 	public static void main(String args[]) {
 		ChatClient client = null;
-		if (args.length == 3)
-			client = new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
-		else if (args.length == 2)
-			client = new ChatClient(args[0], Integer.parseInt(args[1]), "null");
-		else
+		try {
+			if (args.length == 3)
+				client = new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
+			else if (args.length == 2)
+				client = new ChatClient(args[0], Integer.parseInt(args[1]), "null");
+			else
+				System.out.println("Incorrect command line entry: java ChatClient <connection> <port> (<security>)");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 			System.out.println("Incorrect command line entry: java ChatClient <connection> <port> (<security>)");
+
+		}
 	}
 }
