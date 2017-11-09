@@ -269,7 +269,7 @@ public class ChatServer {
 	//Open socket parts
 	public void open() throws IOException {	 
 		streamIn	= new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-		streamOut	= new DataOutputStream(socket.getOutputStream());	  
+		streamOut	= new DataOutputStream(socket.getOutputStream());
 	}
 	
 	//Create security choices array
@@ -311,9 +311,12 @@ public class ChatServer {
 				System.out.println("or: java cryptography_proj.ChatServer <port>");
 			}
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
-			System.out.println("or: java cryptography_proj.ChatServer <port>");
+			if (e instanceof NumberFormatException)
+				System.out.println("Invalid port: value must be a number");
+			else 
+				System.out.println(e.getMessage());
+			System.out.println("Incorrect command line entry: java cryptography_proj.ChatClient <connection> <port> <security>");
+			System.out.println("or: java cryptography_proj.ChatClient <connection> <port>");
 		}
 	}
 }
