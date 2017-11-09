@@ -53,31 +53,11 @@ public class Integrity {
             return true;
         }
     }
+}
 
-    // TODO: remove before merge
-    public static void main(String[] args) {
-      /*  System.out.println("----- Testing: Message has integrity");
-        Integrity server = new Integrity();
-        Integrity client = new Integrity();
-        byte[] hash = server.signMessage("wowzers");
-        try {
-            boolean check = server.checkIntegrity("wowzers", hash);
-            System.out.println("Integrity check: " + check);
-        } catch (InvalidIntegrityException e) {
-            System.out.println("Integrity check didn't work!");
-        }
-        System.out.println("Expected result: true\n\n");
-
-        System.out.println("----- Testing: Message is changed in transport (no integrity)");
-        server = new Integrity();
-        client = new Integrity();
-        hash = server.signMessage("wowzers");
-        try {
-            boolean check = server.checkIntegrity("owzers", hash);
-            System.out.println("Integrity check: " + check);
-        } catch (InvalidIntegrityException e) {
-            System.out.println("Integrity result: false");
-            System.out.println("Expected result: false\n\n");
-        }*/
+// This exception will be thrown when integrity is invalid
+class InvalidIntegrityException extends Exception {
+    public InvalidIntegrityException(String message) {
+        super(message);
     }
 }
