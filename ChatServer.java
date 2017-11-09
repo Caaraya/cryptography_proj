@@ -90,7 +90,7 @@ public class ChatServer {
 					try {
 						// get encrypted hash
 						String encryptedhash = streamIn.readUTF();
-						String hash = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", encryptedhash);
+						String hash = util.decryptRSA("cryptography_proj/Server/serverprivate.key", encryptedhash);
 						String expectedhash = util.readFileAsString("cryptography_proj/Server/client_hash.txt");
 						if(!hash.equals(expectedhash)){
 							// failed authentication
@@ -128,9 +128,9 @@ public class ChatServer {
 					try {
 						String message = streamIn.readUTF();
 						String encryptediv= streamIn.readUTF();
-						message = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", message);
+						message = util.decryptRSA("cryptography_proj/Server/serverprivate.key", message);
 						aesKey = util.getKey(message);
-						iv = util.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", encryptediv).getBytes("Latin1");
+						iv = util.decryptRSA("cryptography_proj/Server/serverprivate.key", encryptediv).getBytes("Latin1");
 						message ="Initialized symmetric keys on server";
 						streamOut.writeUTF(util.encryptAES(iv, aesKey, message));
 						System.out.println(message);
@@ -154,7 +154,7 @@ public class ChatServer {
 							if (I) {
 								hash = streamIn.readUTF(); // Read in hash
 								try {
-									hash = ChatUtils.decryptPrivateRSA("cryptography_proj/Server/serverprivate.key", hash);
+									hash = util.decryptRSA("cryptography_proj/Server/serverprivate.key", hash);
 								} catch (Exception ioe) {
 									System.out.println(ioe.getMessage());
 									line = ".bye";
@@ -241,7 +241,7 @@ public class ChatServer {
 							if (len) {
 								if (I) { // Send hash
 									try {
-										hash = ChatUtils.encryptPublicRSA("cryptography_proj/Server/clientpublic.key", hash);
+										hash = util.encryptRSA("cryptography_proj/Server/clientpublic.key", hash);
 									} catch (Exception ioe) {
 										System.out.println(ioe.getMessage());
 										line = ".bye";
