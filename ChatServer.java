@@ -278,7 +278,7 @@ public class ChatServer {
 							}
 							done = line.equals(".bye");
 							
-							if (C && I && !done && len) {
+							if (C && I && len) {
 								//apply CI
 								try {
 								/*	if (A) { // Use MAC
@@ -294,7 +294,7 @@ public class ChatServer {
 									line = ".bye";
 								}
 
-							} else if (C && !done && len) {
+							} else if (C && len) {
 								//apply C
 								try {
 									line = util.encryptAES(iv, aesKey, line);
@@ -303,7 +303,7 @@ public class ChatServer {
 									line = ".bye";
 								}
 								
-							} else if (I && !done && len) {
+							} else if (I && len) {
 								//apply I
 								try{
 									/*if (A) { // Apply integrity with MAC

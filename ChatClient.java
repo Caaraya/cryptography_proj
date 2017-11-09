@@ -225,7 +225,7 @@ public class ChatClient {
 				//Data to receive
 				if (streamIn.available() > 0) {
 					String hash = "";
-					System.out.print("Server: ");
+					
 					if (I) {
 						hash = streamIn.readUTF();	// Read in hash/MAC first
 					}
@@ -280,7 +280,8 @@ public class ChatClient {
 								line = ".bye";
 							}
 						//}
-					}	
+					}
+					System.out.print("Server: ");
 					System.out.println(line);
 				}
 			} catch(IOException ioe) {
