@@ -272,7 +272,12 @@ public class ChatClient {
 				System.out.println("or: java cryptography_proj.ChatClient <connection> <port>");
 			}
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			if (e instanceof NullPointerException )
+				System.out.println("Invalid port: could not connect");
+			else if (e instanceof NumberFormatException)
+				System.out.println("Invalid port: value must be a number");
+			else 
+				System.out.println(e.getMessage());
 			System.out.println("Incorrect command line entry: java cryptography_proj.ChatClient <connection> <port> <security>");
 			System.out.println("or: java cryptography_proj.ChatClient <connection> <port>");
 		}
