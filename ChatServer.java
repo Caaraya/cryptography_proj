@@ -376,13 +376,14 @@ public class ChatServer {
 	public static void main(String args[]) {
 		ChatServer server = null;
 		try {
-			if (args.length == 2)
+			if (args.length == 2) {
 				server = new ChatServer(Integer.parseInt(args[0]), args[1]);
-			else if (args.length == 1) 
+			} else if (args.length == 1) {
 				server = new ChatServer(Integer.parseInt(args[0]), "null");
-			else
+			} else {
 				System.out.println("Incorrect command line entry: java cryptography_proj.ChatServer <port> <security>");
 				System.out.println("or: java cryptography_proj.ChatServer <port>");
+			}
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
