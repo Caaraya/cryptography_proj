@@ -381,10 +381,12 @@ public class ChatServer {
 			else if (args.length == 1) 
 				server = new ChatServer(Integer.parseInt(args[0]), "null");
 			else
-				System.out.println("Incorrect command line entry: java ChatServer <port> (<security>)");			
+				System.out.println("Incorrect command line entry: java cryptography_proj.ChatServer <port> <security>");
+				System.out.println("or: java cryptography_proj.ChatServer <port>");
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-			System.out.println("Incorrect command line entry: java ChatServer <port> (<security>)");
+			System.out.println("Incorrect command line entry: java ChatServer <port> <security>");
+			System.out.println("or: java cryptography_proj.ChatServer <port>");
 		}
 	}
 }
