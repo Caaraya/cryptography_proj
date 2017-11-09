@@ -1,5 +1,5 @@
 # protected directories
-server and client are assumed to be in resrticted access directories
+server and client are assumed to be in restricted access directories
 
 Server password : serverforassignment3
 
