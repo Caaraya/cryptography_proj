@@ -104,8 +104,8 @@ public class ChatUtils{
         int msglen = Integer.parseInt(msg.split(" ")[0]);
         return msg.substring(intlen + 1, msglen + intlen + 1);
     }
-    
-    public static String encryptPublicRSA(String path, String msg) throws Exception
+
+    public static String encryptRSA(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
         PublicKey key = getPublicKey(path);
@@ -117,7 +117,7 @@ public class ChatUtils{
         return Base64.getEncoder().encodeToString(str);
     }
 
-    public static String decryptPrivateRSA(String path, String msg) throws Exception
+    public static String decryptRSA(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
         PrivateKey key = getPrivateKey(path);

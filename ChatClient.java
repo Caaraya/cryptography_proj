@@ -57,7 +57,7 @@ public class ChatClient {
 
 				String hash = util.hashpass(new String(pw));
 				//encypt hash and send
-				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
+				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", hash);
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
 				line = streamIn.readUTF();
@@ -80,16 +80,16 @@ public class ChatClient {
 				aesKey_MAC = integrityMAC.getKey();
 				iv_MAC = util.generateIV();
 				String keyString = integrityMAC.getKeyString();
-				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", keyString);
+				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", keyString);
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
-				encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", new String(iv_MAC, "Latin1"));
+				encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(iv_MAC, "Latin1"));
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
 				line = streamIn.readUTF();
 				if (line.contains("closing"))
 					return;
-				line = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", line);
+				line = util.decryptRSA("cryptography_proj/Client/clientprivate.key", line);
 				if (!line.contains("Initialized"))
 					return;
 				System.out.println(line);
@@ -130,10 +130,10 @@ public class ChatClient {
 				// make confidentiality work at least
 				aesKey = util.makeAESKey();
 				iv = util.generateIV();
-				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", new String(aesKey.getEncoded(), "Latin1"));
+				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(aesKey.getEncoded(), "Latin1"));
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
-				encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", new String(iv, "Latin1"));
+				encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(iv, "Latin1"));
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
 				line = streamIn.readUTF();
