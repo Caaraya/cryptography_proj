@@ -228,8 +228,17 @@ public class ChatClient {
 					
 					if (I) {
 						hash = streamIn.readUTF();	// Read in hash/MAC first
+						if (hash.equals(".bye")){
+							System.out.println(hash);
+							break;
+						}
 					}
 					line = streamIn.readUTF();			// Then read in string
+					if (line.equals(".bye")){
+						System.out.println(line);
+						break;
+					}
+
 					if (C && I) {
 						/*if (A) { // Decrypt for CIA
 							// TODO: *** Make hash use its OWN symmetric key ***
