@@ -343,13 +343,14 @@ public class ChatClient {
 	public static void main(String args[]) {
 		ChatClient client = null;
 		try {
-			if (args.length == 3)
+			if (args.length == 3) {
 				client = new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
-			else if (args.length == 2)
+			} else if (args.length == 2) {
 				client = new ChatClient(args[0], Integer.parseInt(args[1]), "null");
-			else
+			} else {
 				System.out.println("Incorrect command line entry: java cryptography_proj.ChatClient <connection> <port> <security>");
 				System.out.println("or: java cryptography_proj.ChatClient <connection> <port>");
+			}
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 			System.out.println("Incorrect command line entry: java cryptography_proj.ChatClient <connection> <port> <security>");
