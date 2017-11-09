@@ -3,7 +3,6 @@ import java.lang.*;
 import java.io.*;
 import java.security.*;
 import java.math.BigInteger;
-import java.nio.*;
 import javax.crypto.*;
 import java.util.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -151,7 +150,6 @@ public class ChatUtils{
             aeskey = new SecretKeySpec(data, 0, data.length, "AES");
         }
         catch (Exception ex){
-            System.out.println("we have an exception");
             System.out.println(ex.getMessage());
         }
        
