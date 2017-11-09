@@ -7,18 +7,19 @@ http://esus.com/programmatically-generating-public-private-key/
 Crypto library
 https://docs.oracle.com/javase/8/docs/technotes/guides/security/crypto/CryptoSpec.html
 
-run in parent directory of cryptography_prog
+--Compile server and client in directory 'cryptography_proj'--
+javac ChatServer.java ChatUtils.java Integrity.java
+javac ChatClient.java ChatUtils.java Integrity.java
 
---compile and run server as--
-javac ChatServer.java ChatUtils.java
+
+--Run server and client in parent directory of 'cryptography_proj'--
 java cryptography_proj.ChatServer (port number) (cia option)
-
---compile and run client as--
-javac ChatClient.java ChatUtils.java
 java cryptography_proj.ChatClient localhost (port number) (cia option)
 
-Assymetric encryption algorithm : RSA
 
-symmetric encryption algorithm : AES with CBC
 
-password encryption : md5sum
+Asymmetric encryption algorithm : RSA
+
+Symmetric encryption algorithm : AES with CBC
+
+Password encryption : md5sum
