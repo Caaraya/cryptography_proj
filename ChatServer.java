@@ -37,7 +37,6 @@ public class ChatServer {
 
 				if(!hash.equals(expectedhash)){
 					System.out.println("Incorrect password, closing session");
-					close();
 					return;
 				}
 			} catch (IOException ioe) {
