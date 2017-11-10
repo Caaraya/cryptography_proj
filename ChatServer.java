@@ -116,6 +116,8 @@ public class ChatServer {
 					} catch (RuntimeException ioe) {
 						streamOut.writeUTF("Error initializing closing client");
 						streamOut.flush();
+						streamOut.writeUTF(".bye");
+						streamOut.flush();
 					}
 				}
 				// needed key and initialization vector

@@ -190,7 +190,7 @@ public class ChatClient {
 						//decrypt for C
 						try {
 							line = util.decryptAES(iv, aesKey, line); // Decrypt message
-						} catch (Exception ioe) { // issue with decrypting
+						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
