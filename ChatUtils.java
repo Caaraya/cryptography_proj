@@ -119,7 +119,7 @@ public class ChatUtils{
     public static String encryptPrivateRSA(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
-        PublicKey key = getPrivateKey(path);
+        PrivateKey key = getPrivateKey(path);
         byte[] str = null;
         if (key == null) return "";
         pkCipher.init(Cipher.ENCRYPT_MODE, key);
@@ -142,7 +142,7 @@ public class ChatUtils{
     public static String decryptPublicRSA(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
-        PrivateKey key = getPublicKey(path);
+        PublicKey key = getPublicKey(path);
         byte[] str = null;
         if (key == null) return "";
         pkCipher.init(Cipher.DECRYPT_MODE, key);

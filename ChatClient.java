@@ -168,7 +168,7 @@ public class ChatClient {
 					if (I) {
 						hash = streamIn.readUTF();	// Read in hash
 						try {
-							hash = util.decriptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
+							hash = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
