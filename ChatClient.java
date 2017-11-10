@@ -76,7 +76,6 @@ public class ChatClient {
 			} catch (RuntimeException e) {
 				System.out.println(e.getMessage());
 				line = ".bye";
-				// TODO: Do you want message to user??
 			}
 		} 
 

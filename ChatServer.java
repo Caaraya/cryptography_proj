@@ -114,7 +114,6 @@ public class ChatServer {
 					try {
 						integrity = new Integrity();
 					} catch (RuntimeException ioe) {
-						// TODO: Do you want message to user??
 						streamOut.writeUTF("Error initializing closing client");
 						streamOut.flush();
 					}
@@ -222,7 +221,7 @@ public class ChatServer {
 									line = ".bye";
 								}
 							}
-							
+
 							if (len) {
 								if (I) { // Send hash
 									try {
