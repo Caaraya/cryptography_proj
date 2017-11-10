@@ -110,7 +110,7 @@ class DigestGenPass
         str = pkCipher.doFinal(reCipherBytes);
         return Base64.getEncoder().encodeToString(str);
     }
-    public static String encryptPublicRSAALT(String path, String msg) throws Exception
+    public static String encryptPrivteRSAALT(String path, String msg) throws Exception
     {
         Cipher pkCipher = Cipher.getInstance("RSA");
         PublicKey key = getPublicKey(path);
@@ -177,8 +177,8 @@ class DigestGenPass
     public static void main(String[] args)
     {
         try{
-            String result = encryptPublicRSAALT("Client/serverpublic.key", "ping client for encryption");
-            result = decryptPrivateRSAALT("Server/serverprivate.key", result);
+            String result = encryptPublicRSAALT("Server/serverprivate.key", "ping client for encryption");
+            result = decryptPrivateRSAALT("Client/serverpublic.key", result);
             System.out.println(result);
 
             Key aeskey;

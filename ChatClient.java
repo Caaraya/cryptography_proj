@@ -55,7 +55,7 @@ public class ChatClient {
 
 				String hash = util.hashpass(new String(pw));
 				//encypt hash and send
-				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", hash);
+				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
 				line = streamIn.readUTF();
@@ -87,10 +87,10 @@ public class ChatClient {
 			try{
 				aesKey = util.makeAESKey();
 				iv = util.generateIV();
-				String encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(aesKey.getEncoded(), "Latin1"));
+				String encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", new String(aesKey.getEncoded(), "Latin1"));
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
-				encrypted = util.encryptRSA("cryptography_proj/Client/serverpublic.key", new String(iv, "Latin1"));
+				encrypted = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", new String(iv, "Latin1"));
 				streamOut.writeUTF(encrypted);
 				streamOut.flush();
 				line = streamIn.readUTF();
@@ -146,7 +146,7 @@ public class ChatClient {
 					
 					if (I) {
 						try {
-							hash = ChatUtils.encryptRSA("cryptography_proj/Client/serverpublic.key", hash);
+							hash = ChatUtils.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
@@ -168,7 +168,7 @@ public class ChatClient {
 					if (I) {
 						hash = streamIn.readUTF();	// Read in hash
 						try {
-							hash = ChatUtils.decryptRSA("cryptography_proj/Client/clientprivate.key", hash);
+							hash = util.decriptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
