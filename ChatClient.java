@@ -76,7 +76,6 @@ public class ChatClient {
 			} catch (RuntimeException e) {
 				System.out.println(e.getMessage());
 				line = ".bye";
-				// TODO: Do you want message to user??
 			}
 		} 
 
@@ -123,36 +122,35 @@ public class ChatClient {
 					} else {
 						len = true;
 					}
-					if (C && I && len) {
-						//apply CI
+
+					if (I && len) {
+						//apply I
 						hash = integrity.signMessage(line);
+					}
+					if (C && len) {
+						//apply C
 						try {
 							line = util.encryptAES(iv, aesKey, line);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";	
 						}
-					} else if (C && len) {
-						//apply C only
-						try {
-							line = util.encryptAES(iv, aesKey, line);
-						} catch (Exception ioe) {
-							System.out.println(ioe.getMessage());
-							line = ".bye";
-						}
-					} else if (I && len) {
-						hash = integrity.signMessage(line);
-					}		
-					
+					}	
+
 					if (I) {
-						try {
-							hash = ChatUtils.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
+						try { // send hash
+							hash = util.encryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
+							int mid = hash.length()/2;
+							String hash1 = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash.substring(0, mid));
+							String hash2 = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash.substring(mid));
+							streamOut.writeUTF(hash1);
+							streamOut.flush();
+							streamOut.writeUTF(hash2);
+							streamOut.flush();
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-						streamOut.writeUTF(hash);
-						streamOut.flush();
 					}
  					if (len) {
 						streamOut.writeUTF(line);
@@ -166,9 +164,13 @@ public class ChatClient {
 				if (streamIn.available() > 0) {
 					String hash = "";
 					if (I) {
-						hash = streamIn.readUTF();	// Read in hash
+						String hash1 = streamIn.readUTF();	// Read in hash1
+						String hash2 = streamIn.readUTF();  // Read in hash2
 						try {
-							hash = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
+							hash1 = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash1);
+							hash2 = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash2);
+							hash = hash1 + hash2;
+							hash = util.decryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
@@ -184,25 +186,18 @@ public class ChatClient {
 						break;
 					}
 
-					if (C && I) {
-						//decrypt for CI
-						try {
-							line = util.decryptAES(iv, aesKey, line); // Decrypt message
-							integrity.checkIntegrity(line, hash);
-						} catch (Exception ioe) { // Message integrity was invalid OR issue with decrypting
-							System.out.println(ioe.getMessage());
-							line = ".bye";
-						}
-					} else if (C) {
+					if (C) {
 						//decrypt for C
 						try {
-							line = util.decryptAES(iv, aesKey, line);
+							line = util.decryptAES(iv, aesKey, line); // Decrypt message
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
+					}
 
-					} else if (I) {
+					if (I) {
+						//check integrity
 						try {
 							integrity.checkIntegrity(line, hash);
 						} catch (Exception ioe) { // Message integrity was invalid
@@ -210,6 +205,7 @@ public class ChatClient {
 							line = ".bye";
 						}
 					}
+					
 					System.out.print("Server: ");
 					System.out.println(line);
 				}
