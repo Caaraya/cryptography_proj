@@ -151,7 +151,7 @@ public class ChatServer {
 						if (streamIn.available() > 0) {
 							String hash = "";
 
-							if (I) {
+							if (I) { // Receive hash
 								String hash1 = streamIn.readUTF(); // Read in hash1
 								String hash2 = streamIn.readUTF(); // Read in hash2
 								try {
@@ -168,16 +168,7 @@ public class ChatServer {
 							System.out.print("Client: ");
 							line = streamIn.readUTF();
 
-							if (C && I) {
-								//decrypt CI
-								try {
-									line = util.decryptAES(iv, aesKey, line);
-									integrity.checkIntegrity(line, hash);
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
-								}
-							} else if (C) {
+							if (C) {
 								//decrypt C
 								try {
 									line = util.decryptAES(iv, aesKey, line);
@@ -185,16 +176,15 @@ public class ChatServer {
 									System.out.println(ioe.getMessage());
 									line = ".bye";
 								}
+							}
                 
-							} else if (I) { //decrypt for I
+							if (I) { //check integrity
 								try {
-										integrity.checkIntegrity(line, hash);
-									} catch (InvalidIntegrityException e) {
-										System.out.println(e.getMessage());
-										line = ".bye";
-										//TODO: Integrity was invalid! How do we want to handle this? Alert the user?
-										//      Close the connection?
-									}
+									integrity.checkIntegrity(line, hash);
+								} catch (InvalidIntegrityException e) {
+									System.out.println(e.getMessage());
+									line = ".bye";
+								}
 							}	
 							System.out.println(line);
 							done = line.equals(".bye");
@@ -213,31 +203,22 @@ public class ChatServer {
 							}
 							done = line.equals(".bye");
 							
-							if (C && I && len) {
-								//apply CI
-								try {
-									hash = integrity.signMessage(line); // Get hash of message
-									line = util.encryptAES(iv, aesKey, line); // Encrypt message
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
-								}
-
-							} else if (C && len) {
-								//apply C
-								try {
-									line = util.encryptAES(iv, aesKey, line);
-								} catch (Exception ioe) {
-									System.out.println(ioe.getMessage());
-									line = ".bye";
-								}
-								
-							} else if (I && len) {
+							if (I && len) {
 								//apply I
 								try{
 									hash = integrity.signMessage(line); // Get hash of message
 								} catch (Exception e) {
 									System.out.println(e.getMessage());
+									line = ".bye";
+								}
+							}
+
+							if (C && len) {
+								//apply C
+								try {
+									line = util.encryptAES(iv, aesKey, line); // Encrypt message
+								} catch (Exception ioe) {
+									System.out.println(ioe.getMessage());
 									line = ".bye";
 								}
 							}
