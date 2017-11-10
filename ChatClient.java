@@ -146,13 +146,18 @@ public class ChatClient {
 					
 					if (I) {
 						try {
-							hash = ChatUtils.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
+							hash = util.encryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
+							int mid = hash.length()/2;
+							String hash1 = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash.substring(0, mid));
+							String hash2 = util.encryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash.substring(mid));
+							streamOut.writeUTF(hash1);
+							streamOut.flush();
+							streamOut.writeUTF(hash2);
+							streamOut.flush();
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
 						}
-						streamOut.writeUTF(hash);
-						streamOut.flush();
 					}
  					if (len) {
 						streamOut.writeUTF(line);
@@ -166,9 +171,13 @@ public class ChatClient {
 				if (streamIn.available() > 0) {
 					String hash = "";
 					if (I) {
-						hash = streamIn.readUTF();	// Read in hash
+						String hash1 = streamIn.readUTF();	// Read in hash1
+						String hash2 = streamIn.readUTF();  // Read in hash2
 						try {
-							hash = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash);
+							hash1 = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash1);
+							hash2 = util.decryptPrivateRSA("cryptography_proj/Client/clientprivate.key", hash2);
+							hash = hash1 + hash2;
+							hash = util.decryptPublicRSA("cryptography_proj/Client/serverpublic.key", hash);
 						} catch (Exception ioe) {
 							System.out.println(ioe.getMessage());
 							line = ".bye";
